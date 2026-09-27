@@ -185,8 +185,9 @@
     </div>
 
 
-    <div class="message" *ngIf="loading()">
-      Loading products...
+    <div class="message" *ngIf="loading()" class="loading-container">
+      <div class="spinner"></div>
+      <span>Loading products...</span>
     </div>
 
 
