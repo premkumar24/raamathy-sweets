@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Product {
   _id: string;
@@ -47,7 +48,7 @@ export interface ProductImageUploadResponse {
 })
 export class ProductService {
 
-  private apiUrl = '/api/products';
+  private apiUrl = `${environment.apiUrl}/api/products`;
 
   constructor(private http: HttpClient) {}
 
@@ -87,9 +88,9 @@ uploadProductImage(
   );
 
   return this.http.post<ProductImageUploadResponse>(
-    '/api/admin/uploads/product-image',
-    formData
-  );
+  `${environment.apiUrl}/api/admin/uploads/product-image`,
+  formData
+);
 }
 
 updateProduct(

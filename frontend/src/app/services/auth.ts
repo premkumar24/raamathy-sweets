@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CartService } from './cart';
+import { environment } from '../../environments/environment';
 
 export interface User {
   id: string;
@@ -47,7 +48,7 @@ export interface UpdateProfileResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private apiUrl = '/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
 
   currentUser =
     signal<User | null>(this.loadUser());

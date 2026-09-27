@@ -1,7 +1,7 @@
 export const environment = {
-  production: false,
+  production: true,
 
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'https://raamathy-sweets-api-uat.onrender.com',
 
   googleClientId:
     '897614001856-v1g6plg70sn2k0hg3hetjvs4soi0kamn.apps.googleusercontent.com'
