@@ -1,0 +1,440 @@
+<div class="admin-products-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <div>
+      <p class="page-eyebrow">
+        ADMIN PANEL
+      </p>
+
+      <h2>
+        Products
+      </h2>
+
+      <p class="page-description">
+        Manage your Raamathy Sweets products, pricing and inventory.
+      </p>
+    </div>
+
+    <div class="product-count">
+      {{ products().length }}
+      <span>Products</span>
+    </div>
+
+  </div>
+
+
+  <!-- Messages -->
+
+  <p *ngIf="errorMessage()" class="error">
+    {{ errorMessage() }}
+  </p>
+
+
+  <!-- Product Form -->
+  <section class="product-form-section">
+
+    <div class="section-header">
+
+      <div>
+        <p class="section-eyebrow">
+          {{ editingProductId() ? 'UPDATE PRODUCT' : 'PRODUCT MANAGEMENT' }}
+        </p>
+
+        <h3>
+          {{ editingProductId() ? 'Edit Product' : 'Add New Product' }}
+        </h3>
+
+        <p>
+          {{
+          editingProductId()
+          ? 'Update the product details below.'
+          : 'Add a new homemade product to your store.'
+          }}
+        </p>
+      </div>
+
+      <div *ngIf="editingProductId()" class="editing-badge">
+        Editing
+      </div>
+
+    </div>
+
+
+    <form [formGroup]="productForm" (ngSubmit)="createProduct()">
+
+      <!-- Product Name + Category -->
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="product-name">
+            Product Name
+          </label>
+
+          <input id="product-name" type="text" formControlName="name" placeholder="Ghee Laddoo" />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="product-category">
+            Category
+          </label>
+
+          <input id="product-category" type="text" formControlName="category" placeholder="Laddoo" />
+
+        </div>
+
+      </div>
+
+
+      <!-- Description -->
+      <div class="form-group">
+
+        <label for="product-description">
+          Description
+        </label>
+
+        <textarea id="product-description" formControlName="description" rows="4"
+          placeholder="Describe the product..."></textarea>
+
+      </div>
+
+
+      <!-- Price / Unit / Stock -->
+      <div class="form-row three-columns">
+
+        <div class="form-group">
+
+          <label for="product-price">
+            Price
+          </label>
+
+          <div class="input-with-prefix">
+
+            <span>₹</span>
+
+            <input id="product-price" type="number" formControlName="price" min="0" placeholder="250" />
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="product-unit">
+            Unit
+          </label>
+
+          <input id="product-unit" type="text" formControlName="unit" placeholder="500g" />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="product-stock">
+            Stock
+          </label>
+
+          <input id="product-stock" type="number" formControlName="stock" min="0" placeholder="20" />
+
+        </div>
+
+      </div>
+
+
+      <!-- Image Upload -->
+      <div class="image-upload-section">
+
+        <div class="image-upload-header">
+
+          <div>
+            <label>
+              Product Image
+            </label>
+
+            <small>
+              JPG, PNG or WebP · Maximum 5 MB
+            </small>
+          </div>
+
+          <span *ngIf="uploadedImageUrl()" class="uploaded-badge">
+            ✓ Uploaded
+          </span>
+
+        </div>
+
+
+        <div class="image-upload-content">
+
+          <!-- Image Preview -->
+          <div *ngIf="imagePreview()" class="image-preview">
+            <img [src]="imagePreview()" alt="Product preview" />
+          </div>
+
+
+          <!-- Upload Area -->
+          <label for="product-image" class="image-select-area">
+
+            <span class="upload-icon">
+              ↑
+            </span>
+
+            <strong>
+              {{
+              selectedImage()
+              ? selectedImage()?.name
+              : 'Choose product image'
+              }}
+            </strong>
+
+            <span>
+              Click to browse your computer
+            </span>
+
+          </label>
+
+          <input id="product-image" type="file" accept="image/jpeg,image/png,image/webp"
+            (change)="onImageSelected($event)" hidden />
+
+        </div>
+
+
+        <button type="button" class="upload-image-button" [disabled]="
+    !selectedImage() ||
+    uploadingImage() ||
+    submitting()
+  " (click)="uploadImage()">
+          <span *ngIf="uploadingImage()" class="button-spinner"></span>
+
+          <span>
+            {{
+            uploadingImage()
+            ? 'Uploading Image...'
+            : 'Upload Image'
+            }}
+          </span>
+        </button>
+
+      </div>
+
+
+      <!-- Availability -->
+      <div class="availability">
+
+        <label class="availability-toggle">
+
+          <input type="checkbox" formControlName="isAvailable" />
+
+          <span class="toggle-slider"></span>
+
+          <span class="availability-text">
+            <strong>
+              Product Available
+            </strong>
+
+            <small>
+              Customers can see and order this product
+            </small>
+          </span>
+
+        </label>
+
+      </div>
+
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+
+        <button type="submit" class="primary-action-button" [disabled]="
+    submitting() ||
+    uploadingImage()
+  ">
+          <span *ngIf="submitting()" class="button-spinner"></span>
+
+          <span>
+            {{
+            submitting()
+            ? (
+            editingProductId()
+            ? 'Updating Product...'
+            : 'Creating Product...'
+            )
+            : editingProductId()
+            ? 'Update Product'
+            : 'Create Product'
+            }}
+          </span>
+        </button>
+
+
+        <button *ngIf="editingProductId()" type="button" class="cancel-edit-button" (click)="cancelEdit()">
+          Cancel Edit
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <!-- Products Section -->
+  <section class="product-list-section">
+
+    <div class="section-header">
+
+      <div>
+        <p class="section-eyebrow">
+          INVENTORY
+        </p>
+
+        <h3>
+          Your Products
+        </h3>
+
+        <p>
+          Manage your current product catalogue.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="loading-state">
+      <div class="loading-spinner"></div>
+
+      <p>
+        Loading products...
+      </p>
+    </div>
+
+
+    <!-- Empty -->
+    <div *ngIf="
+        !loading() &&
+        products().length === 0
+      " class="empty">
+      <div class="empty-icon">
+        +
+      </div>
+
+      <h4>
+        No products yet
+      </h4>
+
+      <p>
+        Add your first product using the form above.
+      </p>
+    </div>
+
+
+    <!-- Product Grid -->
+    <div *ngIf="
+        !loading() &&
+        products().length > 0
+      " class="products-grid">
+
+      <div *ngFor="let product of products()" class="product-card">
+
+        <!-- Product Image -->
+        <div class="product-image">
+
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+
+          <div *ngIf="!product.imageUrl" class="no-image">
+            <span>+</span>
+            No Image
+          </div>
+
+          <!-- Availability Badge -->
+          <span class="availability-badge" [class.unavailable]="!product.isAvailable">
+            {{
+            product.isAvailable
+            ? 'Available'
+            : 'Unavailable'
+            }}
+          </span>
+
+        </div>
+
+
+        <!-- Product Information -->
+        <div class="product-info">
+
+          <div class="product-category">
+            {{ product.category }}
+          </div>
+
+          <h4>
+            {{ product.name }}
+          </h4>
+
+          <p class="product-description">
+            {{ product.description || 'No description available.' }}
+          </p>
+
+
+          <div class="product-price">
+
+            <strong>
+              ₹{{ product.price }}
+            </strong>
+
+            <span>
+              / {{ product.unit }}
+            </span>
+
+          </div>
+
+
+          <div class="product-stock">
+
+            <span>
+              Stock
+            </span>
+
+            <strong [class.low-stock]="product.stock <= 5" [class.out-of-stock]="product.stock === 0">
+              {{ product.stock }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="product-actions">
+
+          <button type="button" class="edit-button" (click)="editProduct(product); $event.stopPropagation()">
+            Edit
+          </button>
+
+          <button type="button" class="delete-button" [disabled]="deletingProductId() === product._id"
+            (click)="deleteProduct(product); $event.stopPropagation()">
+            <span *ngIf="deletingProductId() === product._id" class="button-spinner"></span>
+
+            <span>
+              {{
+              deletingProductId() === product._id
+              ? 'Deleting...'
+              : 'Delete'
+              }}
+            </span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

@@ -1,0 +1,424 @@
+<div class="home-page">
+
+  <!-- Hero -->
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <p class="hero-eyebrow">
+        HOMEMADE • TRADITIONAL • DELICIOUS
+      </p>
+
+      <h1>
+        Traditionally made.
+        <span>Simply delicious.</span>
+      </h1>
+
+      <p class="hero-description">
+        Homemade sweets, wholesome health mixes and
+        traditional snacks made with care and
+        familiar flavours.
+      </p>
+
+      <div class="hero-actions">
+
+        <a routerLink="/" fragment="products" class="primary-button">
+          Explore Products
+        </a>
+
+        <a routerLink="/cart" class="secondary-button">
+          View Cart
+        </a>
+
+      </div>
+
+      <div class="hero-highlights">
+
+        <div class="highlight">
+          <span class="highlight-icon">🍬</span>
+
+          <div>
+            <strong>Homemade</strong>
+            <small>Made with care</small>
+          </div>
+        </div>
+
+        <div class="highlight">
+          <span class="highlight-icon">🌾</span>
+
+          <div>
+            <strong>Quality</strong>
+            <small>Simple ingredients</small>
+          </div>
+        </div>
+
+        <div class="highlight">
+          <span class="highlight-icon">❤️</span>
+
+          <div>
+            <strong>Traditional</strong>
+            <small>Familiar flavours</small>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="hero-visual">
+
+      <div class="hero-image-wrapper">
+
+        <div class="hero-decoration decoration-one"></div>
+        <div class="hero-decoration decoration-two"></div>
+
+        <div class="hero-image-placeholder">
+          <span>🍬</span>
+          <p>Raamathy Sweets</p>
+        </div>
+
+      </div>
+
+      <div class="floating-card">
+
+        <span class="floating-icon">
+          ✨
+        </span>
+
+        <div>
+          <strong>Made with care</strong>
+          <small>Just like homemade</small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- Specialties -->
+  <section class="specialties-section">
+
+    <div class="section-heading">
+
+      <p class="section-eyebrow">
+        WHAT WE MAKE
+      </p>
+
+      <h2>
+        Something for every craving
+      </h2>
+
+      <p>
+        From traditional sweets to wholesome everyday
+        favourites.
+      </p>
+
+    </div>
+
+    <div class="specialties-grid">
+
+      <div class="specialty-card">
+        <div class="specialty-icon">
+          🍬
+        </div>
+
+        <h3>Sweets</h3>
+
+        <p>
+          Traditional homemade sweets for every
+          occasion.
+        </p>
+      </div>
+
+      <div class="specialty-card">
+        <div class="specialty-icon">
+          🌾
+        </div>
+
+        <h3>Health Mix</h3>
+
+        <p>
+          Wholesome blends made for everyday
+          goodness.
+        </p>
+      </div>
+
+      <div class="specialty-card">
+        <div class="specialty-icon">
+          🥥
+        </div>
+
+        <h3>Traditional Snacks</h3>
+
+        <p>
+          Familiar flavours inspired by homemade
+          recipes.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- Products -->
+  <section id="products" class="products-section">
+
+    <div class="section-heading products-heading">
+
+      <div>
+        <p class="section-eyebrow">
+          OUR COLLECTION
+        </p>
+
+        <h2>
+          Customer favourites
+        </h2>
+
+        <p>
+          Discover our homemade selection.
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="message" *ngIf="loading()">
+      Loading products...
+    </div>
+
+
+    <div class="message error" *ngIf="
+        !loading() &&
+        errorMessage()
+      ">
+
+      <p>
+        {{ errorMessage() }}
+      </p>
+
+      <button type="button" (click)="loadProducts()">
+        Try Again
+      </button>
+
+    </div>
+
+
+    <div class="message" *ngIf="
+        !loading() &&
+        !errorMessage() &&
+        products().length === 0
+      ">
+      No products available.
+    </div>
+
+
+    <div class="product-grid" *ngIf="
+    !loading() &&
+    !errorMessage() &&
+    products().length > 0
+  ">
+
+      <article class="product-card" *ngFor="let product of products()" [routerLink]="['/product', product._id]">
+
+        <!-- Product Image -->
+        <div class="product-image">
+
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
+
+          <div class="no-image" *ngIf="!product.imageUrl">
+            <span>🍬</span>
+            <small>Raamathy Sweets</small>
+          </div>
+
+          <!-- Availability -->
+          <span class="availability-badge" *ngIf="
+          product.isAvailable &&
+          product.stock > 0
+        ">
+            Available
+          </span>
+
+          <span class="availability-badge unavailable" *ngIf="
+          !product.isAvailable ||
+          product.stock === 0
+        ">
+            Sold Out
+          </span>
+
+        </div>
+
+
+        <!-- Product Information -->
+        <div class="product-content">
+
+          <span class="product-category">
+            {{ product.category }}
+          </span>
+
+          <h3>
+            {{ product.name }}
+          </h3>
+
+          <p class="product-description">
+            {{ product.description }}
+          </p>
+
+
+          <!-- Price + Cart -->
+          <div class="product-bottom">
+
+            <div class="product-price">
+
+              <span class="price">
+                ₹{{ product.price }}
+              </span>
+
+              <span class="unit">
+                / {{ product.unit }}
+              </span>
+
+            </div>
+
+            <button type="button" class="add-cart-button" [disabled]="
+    !product.isAvailable ||
+    product.stock === 0 ||
+    addingToCartId() === product._id
+  " (click)="
+    addToCart(product);
+    $event.stopPropagation()
+  ">
+              <span *ngIf="addingToCartId() === product._id" class="button-spinner"></span>
+
+              <span>
+                {{
+                addingToCartId() === product._id
+                ? 'Adding...'
+                : product.isAvailable &&
+                product.stock > 0
+                ? 'Add to Cart'
+                : 'Unavailable'
+                }}
+              </span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <!-- Why Us -->
+  <section class="why-section">
+
+    <div class="section-heading">
+
+      <p class="section-eyebrow">
+        WHY RAAMATHY
+      </p>
+
+      <h2>
+        Made for the moments that matter
+      </h2>
+
+    </div>
+
+
+    <div class="why-grid">
+
+      <div class="why-card">
+
+        <span>🏠</span>
+
+        <h3>
+          Homemade feel
+        </h3>
+
+        <p>
+          Simple, familiar and made with the
+          warmth of homemade food.
+        </p>
+
+      </div>
+
+
+      <div class="why-card">
+
+        <span>🌿</span>
+
+        <h3>
+          Carefully made
+        </h3>
+
+        <p>
+          We focus on quality ingredients and
+          thoughtful preparation.
+        </p>
+
+      </div>
+
+
+      <div class="why-card">
+
+        <span>🤎</span>
+
+        <h3>
+          Traditional taste
+        </h3>
+
+        <p>
+          Recipes and flavours inspired by
+          generations of Indian food traditions.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- Story -->
+  <section class="story-section">
+
+    <div class="story-content">
+
+      <p class="section-eyebrow">
+        OUR STORY
+      </p>
+
+      <h2>
+        From our kitchen
+        <span>to your home.</span>
+      </h2>
+
+      <p>
+        Raamathy Sweets brings together the joy of
+        homemade food and the flavours we grew up
+        loving.
+      </p>
+
+      <p>
+        Whether it is a box of sweets for a special
+        occasion or a wholesome mix for your family,
+        every product is made with care.
+      </p>
+
+    </div>
+
+    <div class="story-visual">
+      <div>
+        🥣
+      </div>
+    </div>
+
+  </section>
+
+</div>

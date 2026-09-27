@@ -1,0 +1,179 @@
+<div class="admin-shell">
+
+  <!-- ================================
+       Top Header
+  ================================= -->
+
+<header class="admin-header">
+
+  <div class="admin-header-inner">
+
+    <!-- Admin Brand -->
+    <a
+      routerLink="/admin"
+      class="admin-brand"
+    >
+
+      <div class="brand-mark">
+        RS
+      </div>
+
+      <div class="brand-text">
+
+        <strong>
+          Raamathy Sweets
+        </strong>
+
+        <span>
+          Administration
+        </span>
+
+      </div>
+
+    </a>
+
+
+    <!-- Back to Shop -->
+    <a
+      routerLink="/"
+      class="back-to-shop"
+    >
+      ← Back to Shop
+    </a>
+
+
+    <!-- Admin User -->
+    <div class="admin-user">
+
+      <div class="user-info">
+
+        <span class="user-label">
+          Signed in as
+        </span>
+
+        <strong>
+          {{ authService.currentUser()?.name }}
+        </strong>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="logout-button"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+  <!-- ================================
+       Main Area
+  ================================= -->
+
+  <div class="admin-body">
+
+
+<!-- Sidebar -->
+
+<aside class="admin-sidebar">
+
+  <div class="sidebar-heading">
+    ADMIN MENU
+  </div>
+
+
+  <nav class="admin-nav">
+
+    <a
+      routerLink="/admin"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item"
+    >
+
+      <span class="nav-icon">
+        ▦
+      </span>
+
+      <span>
+        Dashboard
+      </span>
+
+    </a>
+
+
+    <a
+      routerLink="/admin/orders"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+
+      <span class="nav-icon">
+        🛍
+      </span>
+
+      <span>
+        Orders
+      </span>
+
+    </a>
+
+
+    <a
+      routerLink="/admin/products"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+
+      <span class="nav-icon">
+        🍬
+      </span>
+
+      <span>
+        Products
+      </span>
+
+    </a>
+
+  </nav>
+
+
+  <div class="sidebar-bottom">
+
+    <a
+      routerLink="/"
+      class="shop-link"
+    >
+
+      <span>
+        ←
+      </span>
+
+      <span>
+        Back to Shop
+      </span>
+
+    </a>
+
+  </div>
+
+</aside>
+
+
+<!-- Page Content -->
+
+<main class="admin-content">
+
+  <router-outlet></router-outlet>
+
+</main>
+
+
+  </div>
+
+</div>

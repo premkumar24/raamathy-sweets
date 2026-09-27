@@ -1,0 +1,368 @@
+<div class="checkout-page">
+
+  <div class="checkout-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+
+      <p class="section-eyebrow">
+        CHECKOUT
+      </p>
+
+      <h1>
+        Complete Your Order
+      </h1>
+
+      <p>
+        Tell us where to deliver your homemade favourites.
+      </p>
+
+    </div>
+
+
+    <!-- Success -->
+    <!-- Success -->
+
+    <div class="success-card" *ngIf="orderSuccess()">
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <p class="success-eyebrow">
+        ORDER SUCCESSFULLY CREATED
+      </p>
+
+      <h2>
+        Thank you for your order!
+      </h2>
+
+      <p>
+        Your order has been received successfully.
+      </p>
+
+      <div class="order-number-box">
+
+
+        <span>
+          Order Number
+        </span>
+
+        <strong>
+          {{ orderNumber() }}
+        </strong>
+
+
+      </div>
+
+      <p class="confirmation-text">
+        Our admin will reach out to you shortly
+        to confirm your order and delivery details.
+      </p>
+
+      <div class="success-actions">
+
+
+        <button type="button" class="primary-button" (click)="downloadInvoice()">
+          Download Invoice
+        </button>
+
+        <a routerLink="/orders" class="secondary-button">
+          View My Orders
+        </a>
+
+        <a routerLink="/" fragment="products" class="secondary-button">
+          Continue Shopping
+        </a>
+
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Checkout -->
+    <div class="checkout-layout" *ngIf="!orderSuccess()">
+
+      <!-- Customer Details -->
+      <section class="checkout-form-card">
+
+        <div class="card-heading">
+
+          <span class="step-number">
+            01
+          </span>
+
+          <div>
+
+            <p>
+              DELIVERY DETAILS
+            </p>
+
+            <h2>
+              Where should we deliver?
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <form [formGroup]="orderForm" (ngSubmit)="placeOrder()">
+
+          <!-- Name -->
+          <div class="form-field">
+
+            <label for="name">
+              Full Name
+            </label>
+
+            <input id="name" type="text" formControlName="name" placeholder="Enter your full name" />
+
+            <small class="field-error" *ngIf="
+                orderForm.controls.name.touched &&
+                orderForm.controls.name.invalid
+              ">
+              Please enter your name.
+            </small>
+
+          </div>
+
+
+          <!-- Phone -->
+          <div class="form-field">
+
+            <label for="phone">
+              Mobile Number
+            </label>
+
+            <input id="phone" type="tel" maxlength="10" formControlName="phone"
+              placeholder="Enter 10-digit mobile number" />
+
+            <small class="field-error" *ngIf="
+                orderForm.controls.phone.touched &&
+                orderForm.controls.phone.invalid
+              ">
+              Please enter a valid 10-digit mobile number.
+            </small>
+
+          </div>
+
+
+          <!-- Address -->
+          <div class="form-field">
+
+            <label for="address">
+              Delivery Address
+            </label>
+
+            <textarea id="address" rows="5" formControlName="address"
+              placeholder="Enter your complete delivery address"></textarea>
+
+            <small class="field-error" *ngIf="
+                orderForm.controls.address.touched &&
+                orderForm.controls.address.invalid
+              ">
+              Please enter your complete address.
+            </small>
+
+          </div>
+
+
+          <!-- Error -->
+          <div class="form-error" *ngIf="errorMessage()">
+            {{ errorMessage() }}
+          </div>
+
+
+          <!-- Submit -->
+          <button type="submit" class="place-order-button" [disabled]="isSubmitting()">
+
+            <span *ngIf="!isSubmitting()">
+              Place Order
+            </span>
+
+            <span *ngIf="isSubmitting()">
+              Placing Order...
+            </span>
+
+          </button>
+
+        </form>
+
+      </section>
+
+
+      <!-- Order Information -->
+      <aside class="order-summary">
+
+        <div class="summary-card">
+
+          <p class="summary-eyebrow">
+            YOUR ORDER
+          </p>
+
+          <h2>
+            Order Summary
+          </h2>
+
+
+          <!-- Cart Items -->
+          <div class="summary-item" *ngFor="
+              let item of checkoutItems()
+            ">
+
+            <div class="summary-item-image">
+
+              <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl" [alt]="item.product.name" />
+
+              <span *ngIf="!item.product.imageUrl">
+                🍬
+              </span>
+
+            </div>
+
+
+            <div class="summary-item-info">
+
+              <strong>
+                {{ item.product.name }}
+              </strong>
+
+              <span>
+                {{ item.quantity }}
+                × ₹{{ item.product.price }}
+              </span>
+
+            </div>
+
+
+            <strong class="summary-item-total">
+              ₹{{
+              item.product.price *
+              item.quantity
+              }}
+            </strong>
+
+          </div>
+
+
+          <div class="summary-divider"></div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Items
+            </span>
+
+            <span>
+              {{
+              checkoutItems().reduce(
+              (total, item) =>
+              total + item.quantity,
+              0
+              )
+              }}
+            </span>
+
+          </div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Subtotal
+            </span>
+
+            <span>
+              ₹{{
+  checkoutItems().reduce(
+    (total, item) =>
+      total +
+      item.product.price *
+      item.quantity,
+    0
+  )
+}}
+            </span>
+
+          </div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Delivery
+            </span>
+
+            <span class="delivery-text">
+              Confirmed later
+            </span>
+
+          </div>
+
+
+          <div class="summary-divider"></div>
+
+
+          <div class="summary-total">
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              ₹{{
+  checkoutItems().reduce(
+    (total, item) =>
+      total +
+      item.product.price *
+      item.quantity,
+    0
+  )
+}}
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- Payment Note -->
+        <div class="payment-note">
+
+          <span>
+            🤎
+          </span>
+
+          <div>
+
+            <strong>
+              No online payment required
+            </strong>
+
+            <p>
+              We'll contact you to confirm your
+              order and delivery details.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Back -->
+        <a routerLink="/cart" class="back-to-cart">
+          ← Back to Cart
+        </a>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</div>

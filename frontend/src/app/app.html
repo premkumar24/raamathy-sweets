@@ -1,0 +1,397 @@
+<header *ngIf="!isAdminRoute()" class="app-header">
+
+  <div class="header-container">
+
+    <!-- Brand -->
+    <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+
+      <span class="brand-main">
+        Raamathy
+      </span>
+
+      <span class="brand-sub">
+        Sweets
+      </span>
+
+    </a>
+
+
+    <!-- Desktop Navigation -->
+    <nav class="main-nav">
+
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Home
+      </a>
+
+      <a
+        routerLink="/"
+        fragment="products"
+      >
+        Products
+      </a>
+
+      <a
+        routerLink="/orders"
+        routerLinkActive="active"
+        *ngIf="authService.currentUser()"
+      >
+        My Orders
+      </a>
+
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        *ngIf="authService.currentUser()?.role === 'ADMIN'"
+      >
+        Admin
+      </a>
+
+    </nav>
+
+
+    <!-- Desktop Actions -->
+    <div class="header-actions">
+
+      <a routerLink="/cart" class="cart-link">
+
+        <span class="cart-icon">
+          🛒
+        </span>
+
+        <span>
+          Cart
+        </span>
+
+        <span
+          class="cart-count"
+          *ngIf="cartService.itemCount() > 0"
+        >
+          {{ cartService.itemCount() }}
+        </span>
+
+      </a>
+
+
+      <ng-container
+        *ngIf="
+          authService.currentUser() as user;
+          else loginLink
+        "
+      >
+
+        <div class="user-info">
+
+          <img
+            *ngIf="
+              user.profileImage &&
+              !profileImageError()
+            "
+            [src]="user.profileImage"
+            [alt]="user.name"
+            class="profile-image"
+            referrerpolicy="no-referrer"
+            (error)="profileImageError.set(true)"
+          />
+
+          <span
+            *ngIf="
+              !user.profileImage ||
+              profileImageError()
+            "
+            class="profile-placeholder"
+          >
+            {{ user.name.charAt(0).toUpperCase() }}
+          </span>
+
+          <span class="user-name">
+            {{ user.name }}
+          </span>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+
+      </ng-container>
+
+
+      <ng-template #loginLink>
+
+        <a
+          routerLink="/login"
+          class="login-button"
+        >
+          Login
+        </a>
+
+      </ng-template>
+
+    </div>
+
+
+    <!-- Mobile Menu Button -->
+    <button
+      type="button"
+      class="mobile-menu-button"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-label="Toggle navigation menu"
+    >
+      <span *ngIf="!mobileMenuOpen()">☰</span>
+      <span *ngIf="mobileMenuOpen()">✕</span>
+    </button>
+
+  </div>
+
+
+  <!-- Mobile Navigation -->
+  <div
+    *ngIf="mobileMenuOpen()"
+    class="mobile-menu"
+  >
+
+    <nav class="mobile-nav">
+
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeMobileMenu()"
+      >
+        <span>🏠</span>
+        Home
+      </a>
+
+
+      <a
+        routerLink="/"
+        fragment="products"
+        (click)="closeMobileMenu()"
+      >
+        <span>🛍️</span>
+        Products
+      </a>
+
+
+      <a
+        routerLink="/orders"
+        routerLinkActive="active"
+        *ngIf="authService.currentUser()"
+        (click)="closeMobileMenu()"
+      >
+        <span>📦</span>
+        My Orders
+      </a>
+
+
+      <a
+        routerLink="/cart"
+        routerLinkActive="active"
+        (click)="closeMobileMenu()"
+      >
+        <span>🛒</span>
+        Cart
+
+        <span
+          class="mobile-cart-count"
+          *ngIf="cartService.itemCount() > 0"
+        >
+          {{ cartService.itemCount() }}
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        *ngIf="authService.currentUser()?.role === 'ADMIN'"
+        (click)="closeMobileMenu()"
+      >
+        <span>⚙️</span>
+        Admin
+      </a>
+
+
+      <div
+        *ngIf="authService.currentUser() as user"
+        class="mobile-user"
+      >
+
+        <div class="mobile-user-info">
+
+          <img
+            *ngIf="
+              user.profileImage &&
+              !profileImageError()
+            "
+            [src]="user.profileImage"
+            [alt]="user.name"
+            class="profile-image"
+            referrerpolicy="no-referrer"
+            (error)="profileImageError.set(true)"
+          />
+
+          <span
+            *ngIf="
+              !user.profileImage ||
+              profileImageError()
+            "
+            class="profile-placeholder"
+          >
+            {{ user.name.charAt(0).toUpperCase() }}
+          </span>
+
+          <span>
+            {{ user.name }}
+          </span>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="mobile-logout-button"
+          (click)="logout(); closeMobileMenu()"
+        >
+          Logout
+        </button>
+
+      </div>
+
+
+      <a
+        *ngIf="!authService.currentUser()"
+        routerLink="/login"
+        class="mobile-login"
+        (click)="closeMobileMenu()"
+      >
+        <span>🔐</span>
+        Login
+      </a>
+
+    </nav>
+
+  </div>
+
+</header>
+
+<main>
+  <router-outlet />
+  <app-toast></app-toast>
+</main>
+
+
+
+<footer class="app-footer">
+
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-brand">
+      <a routerLink="/" class="footer-logo">
+        <span class="footer-logo-main">
+          Raamathy
+        </span>
+
+        <span class="footer-logo-sub">
+          Sweets
+        </span>
+      </a>
+
+      <p>
+        Homemade sweets and snacks,
+        made with care and tradition.
+      </p>
+    </div>
+
+
+    <!-- Social Media -->
+    <div class="footer-section">
+
+      <h3>Follow Us</h3>
+
+      <div class="footer-social">
+
+        <a
+          href="https://wa.me/919500301100"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="WhatsApp"
+          class="social-link"
+        >
+          <span>💬</span>
+          WhatsApp
+        </a>
+
+        <a
+          href="https://www.instagram.com/raamathy_offl"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+          class="social-link"
+        >
+          <span>📷</span>
+          Instagram
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <!-- Contact -->
+    <div class="footer-section">
+
+      <h3>Contact Us</h3>
+
+      <div class="footer-contact">
+
+        <a href="tel:+919500301100">
+          <span>📞</span>
+          +91 95003 01100
+        </a>
+
+        <a href="mailto:hello@raamathysweets.com">
+          <span>✉️</span>
+          rs@raamathysweets.com
+        </a>
+
+        <div class="footer-address">
+          <span>📍</span>
+
+          <span>
+            Chozhan Nagar,Ammachatram,<br>
+            Kumbakonam,<br>
+            Tamil Nadu - 612103
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Bottom -->
+  <div class="footer-bottom">
+
+    <p>
+      © {{ currentYear }} Raamathy Sweets.
+      All rights reserved.
+    </p>
+
+  </div>
+
+</footer>

@@ -1,0 +1,70 @@
+/* You can add global styles to this file, and also import other style files */
+:root {
+  --primary: #7a1f2b;
+  --primary-dark: #5d1620;
+  --accent: #c8953e;
+
+  --background: #faf7f1;
+  --surface: #ffffff;
+  --surface-soft: #f4eee4;
+
+  --text: #2d2521;
+  --text-muted: #746b64;
+
+  --border: #e7ded2;
+
+  --success: #2e7d5b;
+  --danger: #b42318;
+
+  --shadow-sm: 0 4px 16px rgba(45, 37, 33, 0.06);
+  --shadow-md: 0 10px 30px rgba(45, 37, 33, 0.10);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --container-width: 1200px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background: var(--background);
+  color: var(--text);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

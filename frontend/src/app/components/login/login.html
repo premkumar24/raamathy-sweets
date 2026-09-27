@@ -1,0 +1,428 @@
+<div class="login-page">
+
+  <div class="login-card">
+
+    <div class="login-header">
+
+      <h1>
+        {{ isRegisterMode() ? 'Create Account' : 'Welcome Back' }}
+      </h1>
+
+      <p>
+        {{
+          isRegisterMode()
+            ? 'Create your Raamathy Sweets account'
+            : 'Login to continue to Raamathy Sweets'
+        }}
+      </p>
+
+    </div>
+
+
+    <!-- ================================ -->
+    <!-- REGISTER -->
+    <!-- ================================ -->
+
+    <form
+      *ngIf="isRegisterMode()"
+      [formGroup]="registerForm"
+      (ngSubmit)="register()"
+      class="auth-form"
+    >
+
+      <!-- Name -->
+
+      <div class="form-group">
+
+        <label for="register-name">
+          Name
+        </label>
+
+        <input
+          id="register-name"
+          type="text"
+          formControlName="name"
+          placeholder="Enter your name"
+          autocomplete="name"
+        />
+
+        <small
+          class="field-error"
+          *ngIf="
+            registerForm.controls.name.touched &&
+            registerForm.controls.name.invalid
+          "
+        >
+          Please enter your name.
+        </small>
+
+      </div>
+
+
+      <!-- Email -->
+
+      <div class="form-group">
+
+        <label for="register-email">
+          Email
+        </label>
+
+        <input
+          id="register-email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+        />
+
+        <small
+          class="field-error"
+          *ngIf="
+            registerForm.controls.email.touched &&
+            registerForm.controls.email.invalid
+          "
+        >
+          Please enter a valid email address.
+        </small>
+
+      </div>
+
+
+      <!-- Password -->
+
+      <div class="form-group">
+
+        <label for="register-password">
+          Password
+        </label>
+
+        <div class="password-input-wrapper">
+
+          <input
+            id="register-password"
+            [type]="
+              showRegisterPassword()
+                ? 'text'
+                : 'password'
+            "
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="new-password"
+          />
+
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="
+              showRegisterPassword.update(
+                value => !value
+              )
+            "
+            [attr.aria-label]="
+              showRegisterPassword()
+                ? 'Hide password'
+                : 'Show password'
+            "
+          >
+            {{
+              showRegisterPassword()
+                ? '🙈'
+                : '👁️'
+            }}
+          </button>
+
+        </div>
+
+        <small
+          class="field-error"
+          *ngIf="
+            registerForm.controls.password.touched &&
+            registerForm.controls.password.invalid
+          "
+        >
+          Password must contain at least 6 characters.
+        </small>
+
+      </div>
+
+
+      <!-- Confirm Password -->
+
+      <div class="form-group">
+
+        <label for="confirm-password">
+          Confirm Password
+        </label>
+
+        <div class="password-input-wrapper">
+
+          <input
+            id="confirm-password"
+            [type]="
+              showConfirmPassword()
+                ? 'text'
+                : 'password'
+            "
+            formControlName="confirmPassword"
+            placeholder="Re-enter your password"
+            autocomplete="new-password"
+          />
+
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="
+              showConfirmPassword.update(
+                value => !value
+              )
+            "
+            [attr.aria-label]="
+              showConfirmPassword()
+                ? 'Hide password'
+                : 'Show password'
+            "
+          >
+            {{
+              showConfirmPassword()
+                ? '🙈'
+                : '👁️'
+            }}
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Error -->
+
+      <div
+        class="error-message"
+        *ngIf="errorMessage()"
+      >
+        {{ errorMessage() }}
+      </div>
+
+
+      <!-- Register Button -->
+
+      <button
+        type="submit"
+        class="primary-button"
+        [disabled]="loading()"
+      >
+
+        <span
+          *ngIf="loading()"
+          class="button-spinner"
+        ></span>
+
+        <span>
+          {{
+            loading()
+              ? 'Creating Account...'
+              : 'Create Account'
+          }}
+        </span>
+
+      </button>
+
+    </form>
+
+
+    <!-- ================================ -->
+    <!-- LOGIN -->
+    <!-- ================================ -->
+
+    <form
+      *ngIf="!isRegisterMode()"
+      [formGroup]="loginForm"
+      (ngSubmit)="login()"
+      class="auth-form"
+    >
+
+      <!-- Email -->
+
+      <div class="form-group">
+
+        <label for="login-email">
+          Email
+        </label>
+
+        <input
+          id="login-email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+        />
+
+        <small
+          class="field-error"
+          *ngIf="
+            loginForm.controls.email.touched &&
+            loginForm.controls.email.invalid
+          "
+        >
+          Please enter a valid email address.
+        </small>
+
+      </div>
+
+
+      <!-- Password -->
+
+      <div class="form-group">
+
+        <label for="login-password">
+          Password
+        </label>
+
+        <div class="password-input-wrapper">
+
+          <input
+            id="login-password"
+            [type]="
+              showLoginPassword()
+                ? 'text'
+                : 'password'
+            "
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="
+              showLoginPassword.update(
+                value => !value
+              )
+            "
+            [attr.aria-label]="
+              showLoginPassword()
+                ? 'Hide password'
+                : 'Show password'
+            "
+          >
+            {{
+              showLoginPassword()
+                ? '🙈'
+                : '👁️'
+            }}
+          </button>
+
+        </div>
+
+        <small
+          class="field-error"
+          *ngIf="
+            loginForm.controls.password.touched &&
+            loginForm.controls.password.invalid
+          "
+        >
+          Please enter your password.
+        </small>
+
+      </div>
+
+
+      <!-- Error -->
+
+      <div
+        class="error-message"
+        *ngIf="errorMessage()"
+      >
+        {{ errorMessage() }}
+      </div>
+
+
+      <!-- Login Button -->
+
+      <button
+        type="submit"
+        class="primary-button"
+        [disabled]="loading()"
+      >
+
+        <span
+          *ngIf="loading()"
+          class="button-spinner"
+        ></span>
+
+        <span>
+          {{
+            loading()
+              ? 'Signing In...'
+              : 'Sign In'
+          }}
+        </span>
+
+      </button>
+
+    </form>
+
+
+    <!-- ================================ -->
+    <!-- GOOGLE LOGIN -->
+    <!-- ================================ -->
+
+    <div
+      class="google-login-area"
+      [class.hidden]="isRegisterMode()"
+    >
+
+      <div class="divider">
+
+        <span>
+          OR
+        </span>
+
+      </div>
+
+      <div class="google-section">
+
+        <div
+          id="google-button"
+          class="google-button"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================================ -->
+    <!-- SWITCH LOGIN / REGISTER -->
+    <!-- ================================ -->
+
+    <div class="switch-mode">
+
+      <span>
+        {{
+          isRegisterMode()
+            ? 'Already have an account?'
+            : "Don't have an account?"
+        }}
+      </span>
+
+      <button
+        type="button"
+        class="switch-button"
+        (click)="toggleMode()"
+        [disabled]="loading()"
+      >
+        {{
+          isRegisterMode()
+            ? 'Sign In'
+            : 'Create Account'
+        }}
+      </button>
+
+    </div>
+
+
+  </div>
+
+</div>

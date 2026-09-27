@@ -1,0 +1,295 @@
+<div class="dashboard-page">
+
+  <div class="page-header">
+
+    <div>
+      <span class="page-eyebrow">
+        ADMINISTRATION
+      </span>
+
+      <h1>
+        Dashboard
+      </h1>
+
+      <p>
+        Overview of your Raamathy Sweets store.
+      </p>
+    </div>
+
+  </div>
+
+  <div
+    *ngIf="loading()"
+    class="state-message"
+  >
+    Loading dashboard...
+  </div>
+
+  <div
+    *ngIf="!loading() && errorMessage()"
+    class="state-message error"
+  >
+    {{ errorMessage() }}
+  </div>
+
+  <ng-container *ngIf="!loading() && !errorMessage()">
+
+    <section class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          🛍
+        </div>
+
+        <div class="stat-content">
+
+          <span class="stat-label">
+            Total Orders
+          </span>
+
+          <strong>
+            {{ getTotalOrders() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          ⏳
+        </div>
+
+        <div class="stat-content">
+
+          <span class="stat-label">
+            Awaiting Confirmation
+          </span>
+
+          <strong>
+            {{ getAwaitingConfirmation() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          🍬
+        </div>
+
+        <div class="stat-content">
+
+          <span class="stat-label">
+            Total Products
+          </span>
+
+          <strong>
+            {{ getTotalProducts() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          ⚠
+        </div>
+
+        <div class="stat-content">
+
+          <span class="stat-label">
+            Low Stock Products
+          </span>
+
+          <strong>
+            {{ getLowStockProducts() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+<section class="quick-actions">
+
+  <a
+    routerLink="/admin/orders"
+    class="quick-action-card"
+  >
+
+    <div class="quick-action-icon">
+      🛍
+    </div>
+
+    <div class="quick-action-content">
+
+      <strong>
+        Manage Orders
+      </strong>
+
+      <span>
+        View and update customer orders
+      </span>
+
+    </div>
+
+    <span class="quick-action-arrow">
+      →
+    </span>
+
+  </a>
+
+
+  <a
+    routerLink="/admin/products"
+    class="quick-action-card"
+  >
+
+    <div class="quick-action-icon">
+      🍬
+    </div>
+
+    <div class="quick-action-content">
+
+      <strong>
+        Manage Products
+      </strong>
+
+      <span>
+        Add, edit and manage your products
+      </span>
+
+    </div>
+
+    <span class="quick-action-arrow">
+      →
+    </span>
+
+  </a>
+
+</section>
+    <section class="dashboard-section">
+
+      <div class="section-header">
+
+        <div>
+          <h2>
+            Recent Orders
+          </h2>
+
+          <p>
+            Latest customer orders.
+          </p>
+        </div>
+
+        <a
+          routerLink="/admin/orders"
+          class="view-all"
+        >
+          View All
+          <span>→</span>
+        </a>
+
+      </div>
+
+
+      <div
+        *ngIf="orders().length === 0"
+        class="empty-state"
+      >
+        <div class="empty-icon">
+          🛍
+        </div>
+
+        <h3>
+          No orders yet
+        </h3>
+
+        <p>
+          Customer orders will appear here.
+        </p>
+      </div>
+
+
+      <div
+        *ngIf="orders().length > 0"
+        class="orders-list"
+      >
+
+        <div
+          *ngFor="
+            let order of orders().slice(0, 5)
+          "
+          class="order-row"
+        >
+
+          <div class="order-main">
+
+            <strong>
+              {{ order.orderNumber }}
+            </strong>
+
+            <span>
+              {{ order.customerName }}
+            </span>
+
+          </div>
+
+
+          <div class="order-items">
+
+            <span>
+              {{ order.items.length }}
+              {{ order.items.length === 1 ? 'item' : 'items' }}
+            </span>
+
+          </div>
+
+
+          <div class="order-amount">
+
+            <strong>
+              ₹{{ order.totalAmount }}
+            </strong>
+
+          </div>
+
+
+          <div class="order-status">
+
+            <span
+              class="status-badge"
+              [ngClass]="
+                'status-' +
+                order.status.toLowerCase()
+              "
+            >
+              {{ order.status
+                .replaceAll('_', ' ')
+                .toLowerCase()
+                .replace(/\b\w/g, char => char.toUpperCase())
+              }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

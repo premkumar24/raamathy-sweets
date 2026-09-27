@@ -1,0 +1,28 @@
+<div
+  *ngIf="toastService.message()"
+  class="toast"
+  [class.error]="toastService.type() === 'error'"
+>
+
+  <div class="toast-icon">
+    {{
+      toastService.type() === 'success'
+        ? '✓'
+        : '!'
+    }}
+  </div>
+
+  <div class="toast-message">
+    {{ toastService.message() }}
+  </div>
+
+  <button
+    type="button"
+    class="toast-close"
+    (click)="close()"
+    aria-label="Close notification"
+  >
+    ×
+  </button>
+
+</div>

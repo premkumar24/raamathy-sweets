@@ -1,0 +1,259 @@
+<div class="product-details-page">
+
+  <div class="details-container" *ngIf="product() as product">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a routerLink="/">Home</a>
+      <span>›</span>
+      <span>{{ product.name }}</span>
+    </div>
+
+    <!-- Product -->
+    <section class="product-details">
+
+      <!-- Image -->
+      <div class="product-image-section">
+
+        <div class="product-image">
+
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+
+          <div class="no-image" *ngIf="!product.imageUrl">
+            <span>🍬</span>
+            <small>Raamathy Sweets</small>
+          </div>
+
+          <span class="availability-badge" *ngIf="
+              product.isAvailable &&
+              product.stock > 0
+            ">
+            Available
+          </span>
+
+          <span class="availability-badge unavailable" *ngIf="
+              !product.isAvailable ||
+              product.stock === 0
+            ">
+            Sold Out
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- Information -->
+      <div class="product-info">
+
+        <span class="product-category">
+          {{ product.category }}
+        </span>
+
+        <h1>
+          {{ product.name }}
+        </h1>
+
+        <div class="price-row">
+
+          <span class="price">
+            ₹{{ product.price }}
+          </span>
+
+          <span class="unit">
+            / {{ product.unit }}
+          </span>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <p class="description">
+          {{ product.description }}
+        </p>
+
+
+        <!-- Stock -->
+        <div class="stock-info" *ngIf="
+            product.isAvailable &&
+            product.stock > 0
+          ">
+          <span class="stock-dot"></span>
+
+          <span>
+            {{ product.stock }} available
+          </span>
+        </div>
+
+
+        <!-- Unavailable -->
+        <div class="unavailable-message" *ngIf="
+            !product.isAvailable ||
+            product.stock === 0
+          ">
+          This product is currently unavailable.
+        </div>
+
+
+        <!-- Quantity -->
+        <div class="quantity-section" *ngIf="
+            product.isAvailable &&
+            product.stock > 0
+          ">
+
+          <label>
+            Quantity
+          </label>
+
+          <div class="quantity-control">
+
+            <button type="button" (click)="decreaseQuantity()">
+              −
+            </button>
+
+            <span>
+              {{ quantity() }}
+            </span>
+
+            <button type="button" (click)="increaseQuantity()">
+              +
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="product-actions">
+
+          <button type="button" class="add-to-cart-button" [disabled]="
+      addingToCart() ||
+      buyingNow() ||
+      !product.isAvailable ||
+      product.stock === 0
+    " (click)="addToCart()">
+            <span *ngIf="addingToCart()" class="button-spinner"></span>
+
+            <span>
+              {{
+              addingToCart()
+              ? 'Adding...'
+              : product.isAvailable &&
+              product.stock > 0
+              ? 'Add to Cart'
+              : 'Unavailable'
+              }}
+            </span>
+          </button>
+
+
+          <button type="button" class="buy-now-button" [disabled]="
+      addingToCart() ||
+      buyingNow() ||
+      !product.isAvailable ||
+      product.stock === 0
+    " (click)="buyNow()">
+            <span *ngIf="buyingNow()" class="button-spinner"></span>
+
+            <span>
+              {{
+              buyingNow()
+              ? 'Processing...'
+              : 'Buy Now'
+              }}
+            </span>
+          </button>
+
+
+          <button type="button" class="view-cart-button" (click)="goToCart()">
+            View Cart
+          </button>
+
+        </div>
+
+
+        <!-- Trust points -->
+        <div class="product-benefits">
+
+          <div class="benefit">
+
+            <span class="benefit-icon">
+              🏠
+            </span>
+
+            <div>
+              <strong>Homemade</strong>
+              <small>
+                Made with care
+              </small>
+            </div>
+
+          </div>
+
+
+          <div class="benefit">
+
+            <span class="benefit-icon">
+              🌿
+            </span>
+
+            <div>
+              <strong>Quality</strong>
+              <small>
+                Carefully prepared
+              </small>
+            </div>
+
+          </div>
+
+
+          <div class="benefit">
+
+            <span class="benefit-icon">
+              🤎
+            </span>
+
+            <div>
+              <strong>Traditional</strong>
+              <small>
+                Familiar flavours
+              </small>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- Loading -->
+  <div class="page-message" *ngIf="loading()">
+    Loading product...
+  </div>
+
+
+  <!-- Error -->
+  <div class="page-message error" *ngIf="
+      !loading() &&
+      errorMessage()
+    ">
+
+    <p>
+      {{ errorMessage() }}
+    </p>
+
+    <a routerLink="/" class="back-button">
+      Back to Products
+    </a>
+
+  </div>
+
+</div>

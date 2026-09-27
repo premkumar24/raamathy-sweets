@@ -1,0 +1,317 @@
+<div class="cart-page">
+
+  <div class="cart-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+
+      <p class="section-eyebrow">
+        YOUR SELECTION
+      </p>
+
+      <h1>
+        Your Cart
+      </h1>
+
+      <p>
+        Review your favourite homemade treats before
+        placing your order.
+      </p>
+
+    </div>
+
+
+    <!-- Empty Cart -->
+    <div class="empty-cart" *ngIf="cartService.items().length === 0">
+
+      <div class="empty-cart-icon">
+        🛒
+      </div>
+
+      <h2>
+        Your cart is empty
+      </h2>
+
+      <p>
+        Looks like you haven't added anything yet.
+        Discover something delicious!
+      </p>
+
+      <a routerLink="/" fragment="products" class="browse-button">
+        Explore Products
+      </a>
+
+    </div>
+
+
+    <!-- Cart Content -->
+    <div class="cart-layout" *ngIf="cartService.items().length > 0">
+
+      <!-- Cart Items -->
+      <section class="cart-items">
+
+        <div class="cart-items-header">
+
+          <div>
+
+            <p class="items-eyebrow">
+              YOUR ITEMS
+            </p>
+
+            <h2>
+              Shopping Cart
+            </h2>
+
+          </div>
+
+          <div class="cart-selection-header">
+
+            <label class="select-all">
+
+              <input type="checkbox" [checked]="allSelected()" (change)="toggleAll()" />
+
+              <span>
+                Select All
+              </span>
+
+            </label>
+
+            <span class="item-count">
+              {{ cartService.itemCount() }}
+              {{
+              cartService.itemCount() === 1
+              ? 'item'
+              : 'items'
+              }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- Cart Item -->
+        <div class="cart-item" *ngFor="
+            let item of cartService.items()
+          ">
+
+          <!-- Selection -->
+          <div class="item-selection">
+
+            <input type="checkbox" [checked]="
+      selectedProductIds().has(
+        item.product._id
+      )
+    " (change)="
+      toggleItem(
+        item.product._id
+      )
+    " />
+
+          </div>
+
+          <!-- Product Image -->
+          <div class="item-image">
+
+            <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl" [alt]="item.product.name" />
+
+            <div class="item-no-image" *ngIf="!item.product.imageUrl">
+              <span>🍬</span>
+            </div>
+
+          </div>
+
+
+          <!-- Product Details -->
+          <div class="item-details">
+
+            <span class="item-category">
+              {{ item.product.category }}
+            </span>
+
+            <h3>
+              {{ item.product.name }}
+            </h3>
+
+            <p class="item-unit">
+              ₹{{ item.product.price }}
+              / {{ item.product.unit }}
+            </p>
+
+
+            <!-- Quantity + Remove -->
+            <div class="item-actions">
+
+              <div class="quantity-control">
+
+                <button type="button" (click)="
+                    decreaseQuantity(
+                      item.product._id
+                    )
+                  " [disabled]="item.quantity <= 1">
+                  −
+                </button>
+
+                <span>
+                  {{ item.quantity }}
+                </span>
+
+                <button type="button" (click)="
+                    increaseQuantity(
+                      item.product._id
+                    )
+                  " [disabled]="
+                    item.quantity >=
+                    item.product.stock
+                  ">
+                  +
+                </button>
+
+              </div>
+
+
+              <button type="button" class="remove-button" (click)="
+                  removeItem(
+                    item.product._id
+                  )
+                ">
+                Remove
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- Item Subtotal -->
+          <div class="item-subtotal">
+
+            <span>
+              Subtotal
+            </span>
+
+            <strong>
+              ₹{{
+              item.product.price *
+              item.quantity
+              }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- Order Summary -->
+      <aside class="order-summary">
+
+        <div class="summary-card">
+
+          <p class="summary-eyebrow">
+            ORDER SUMMARY
+          </p>
+
+          <h2>
+            Your Order
+          </h2>
+
+
+          <div class="summary-row">
+
+            <span>
+              Selected Items
+            </span>
+
+            <span>
+              {{ selectedItemCount() }}
+            </span>
+
+          </div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Subtotal
+            </span>
+
+            <span>
+              ₹{{ selectedTotal() }}
+            </span>
+
+          </div>
+
+
+          <div class="summary-row">
+
+            <span>
+              Delivery
+            </span>
+
+            <span class="delivery-text">
+              Confirmed later
+            </span>
+
+          </div>
+
+
+          <div class="summary-divider"></div>
+
+
+          <div class="summary-total">
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              ₹{{ selectedTotal() }}
+            </strong>
+
+          </div>
+
+
+          <button type="button" class="checkout-button" [disabled]="selectedItemCount() === 0"
+            (click)="proceedToCheckout()">
+            {{
+            selectedItemCount() === 0
+            ? 'Select Items to Checkout'
+            : selectedItemCount() === 1
+            ? 'Checkout Selected Item'
+            : 'Checkout ' +
+            selectedItemCount() +
+            ' Selected Items'
+            }}
+          </button>
+
+
+          <a routerLink="/" fragment="products" class="continue-shopping">
+            ← Continue Shopping
+          </a>
+
+        </div>
+
+
+        <!-- Note -->
+        <div class="cart-note">
+
+          <span class="cart-note-icon">
+            🤎
+          </span>
+
+          <p>
+            Homemade with care and prepared
+            fresh for your order.
+          </p>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,447 @@
+/* ================================ */
+/* Login Page */
+/* ================================ */
+
+.login-page {
+  min-height: calc(100vh - 72px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  background: var(--background);
+}
+
+
+/* ================================ */
+/* Login Card */
+/* ================================ */
+
+.login-card {
+  width: 100%;
+  max-width: 430px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  padding: 36px;
+
+  box-shadow: var(--shadow-md);
+}
+
+
+/* ================================ */
+/* Header */
+/* ================================ */
+
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-header h1 {
+  margin: 0 0 8px;
+
+  color: var(--primary);
+
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.login-header p {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* ================================ */
+/* Form */
+/* ================================ */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+
+  color: var(--text);
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface);
+  color: var(--text);
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+  color: #a49b93;
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(122, 31, 43, 0.08);
+}
+
+
+/* ================================ */
+/* Password Input */
+/* ================================ */
+
+.password-input-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 48px;
+}
+
+
+/* ================================ */
+/* Password Toggle */
+/* ================================ */
+
+.password-toggle {
+  position: absolute;
+
+  top: 50%;
+  right: 10px;
+
+  transform: translateY(-50%);
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--text-muted);
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  border-radius: 50%;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.password-toggle:hover {
+  background: var(--surface-soft);
+
+  color: var(--primary);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+
+  outline-offset: 2px;
+}
+
+
+/* ================================ */
+/* Validation */
+/* ================================ */
+
+.field-error {
+  color: var(--danger);
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+
+/* ================================ */
+/* Error Message */
+/* ================================ */
+
+.error-message {
+  padding: 11px 13px;
+
+  border-radius: var(--radius-sm);
+
+  background: #fdf0ef;
+
+  border: 1px solid #f2d0cc;
+
+  color: var(--danger);
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+
+/* ================================ */
+/* Primary Button */
+/* ================================ */
+
+.primary-button {
+  width: 100%;
+  min-height: 48px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: var(--primary);
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+
+/* ================================ */
+/* Button Spinner */
+/* ================================ */
+
+.button-spinner {
+  width: 15px;
+  height: 15px;
+
+  flex: 0 0 15px;
+
+  border: 2px solid currentColor;
+
+  border-top-color: transparent;
+
+  border-radius: 50%;
+
+  animation: button-spin 0.7s linear infinite;
+}
+
+@keyframes button-spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* ================================ */
+/* Google Login Area */
+/* ================================ */
+
+.google-login-area {
+  width: 100%;
+
+  transition:
+    opacity 0.2s ease;
+}
+
+.google-login-area.hidden {
+  display: none;
+}
+
+
+/* ================================ */
+/* Divider */
+/* ================================ */
+
+.divider {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  margin: 24px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+
+  flex: 1;
+
+  height: 1px;
+
+  background: var(--border);
+}
+
+.divider span {
+  color: var(--text-muted);
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+}
+
+
+/* ================================ */
+/* Google Button */
+/* ================================ */
+
+.google-section {
+  display: flex;
+
+  justify-content: center;
+
+  width: 100%;
+}
+
+.google-button {
+  min-height: 44px;
+
+  display: flex;
+
+  justify-content: center;
+}
+
+
+/* ================================ */
+/* Switch Login / Register */
+/* ================================ */
+
+.switch-mode {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  margin-top: 24px;
+
+  color: var(--text-muted);
+
+  font-size: 13px;
+
+  text-align: center;
+}
+
+.switch-button {
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--primary);
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.switch-button:hover:not(:disabled) {
+  color: var(--primary-dark);
+
+  text-decoration: underline;
+}
+
+.switch-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+
+/* ================================ */
+/* Mobile */
+/* ================================ */
+
+@media (max-width: 480px) {
+
+  .login-page {
+    min-height: calc(100vh - 64px);
+
+    padding: 24px 14px;
+  }
+
+  .login-card {
+    padding: 28px 20px;
+
+    border-radius: var(--radius-md);
+  }
+
+  .login-header {
+    margin-bottom: 24px;
+  }
+
+  .login-header h1 {
+    font-size: 24px;
+  }
+
+}

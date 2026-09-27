@@ -1,0 +1,407 @@
+<div class="admin-page">
+
+  <div class="admin-container">
+
+
+    <!-- Page Header -->
+    <div class="admin-page-header">
+
+      <div>
+
+        <p class="section-eyebrow">
+          ADMINISTRATION
+        </p>
+
+        <h1>
+          Orders
+        </h1>
+
+        <p>
+          Manage customer orders and keep track of their progress.
+        </p>
+
+      </div>
+
+      <div class="orders-count">
+
+        <span>
+          Total Orders
+        </span>
+
+        <strong>
+          {{ orders().length }}
+        </strong>
+
+      </div>
+
+    </div>
+
+    <!-- Order Filters -->
+<div class="orders-filters">
+
+  <div class="filter-group">
+
+    <label for="orderSearch">
+      Search Order ID
+    </label>
+
+    <input
+      id="orderSearch"
+      type="text"
+      placeholder="Enter order number"
+      [value]="searchOrderId()"
+      (input)="onSearchOrderId($event)"
+    />
+
+  </div>
+
+
+  <div class="filter-group">
+
+    <label for="statusFilter">
+      Order Status
+    </label>
+
+    <select
+      id="statusFilter"
+      [value]="selectedStatus()"
+      (change)="onStatusChange($event)"
+    >
+
+      <option value="ALL">
+        All Statuses
+      </option>
+
+      <option value="AWAITING_CONFIRMATION">
+        Awaiting Confirmation
+      </option>
+
+      <option value="CONFIRMED">
+        Confirmed
+      </option>
+
+      <option value="PROCESSING">
+        Processing
+      </option>
+
+      <option value="READY_FOR_DELIVERY">
+        Ready for Delivery
+      </option>
+
+      <option value="DELIVERED">
+        Delivered
+      </option>
+
+      <option value="CANCELLED">
+        Cancelled
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <button
+    type="button"
+    class="clear-filters"
+    (click)="clearFilters()"
+  >
+    Clear
+  </button>
+
+</div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage()" class="admin-error">
+
+      <span class="error-icon">
+        !
+      </span>
+
+      <span>
+        {{ errorMessage() }}
+      </span>
+
+    </div>
+
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="admin-state">
+
+      <div class="loading-spinner"></div>
+
+      <h2>
+        Loading orders...
+      </h2>
+
+      <p>
+        Please wait while the latest orders are loaded.
+      </p>
+
+    </div>
+
+
+    <!-- Empty -->
+    <div *ngIf="
+    !loading() &&
+    !errorMessage() &&
+    orders().length === 0
+  " class="admin-state">
+
+      <div class="empty-icon">
+        🛍️
+      </div>
+
+      <h2>
+        No orders yet
+      </h2>
+
+      <p>
+        Customer orders will appear here once they are placed.
+      </p>
+
+    </div>
+
+
+    <!-- Orders -->
+    <div *ngIf="
+    !loading() &&
+    !errorMessage() &&
+    orders().length > 0
+  " class="orders-list">
+
+      <article *ngFor="let order of filteredOrders()" class="order-card">
+
+        <!-- Order Header -->
+        <div class="order-header">
+
+          <div class="order-main">
+
+            <span class="order-label">
+              ORDER
+            </span>
+
+            <h2>
+              {{ order.orderNumber }}
+            </h2>
+
+            <span class="order-date">
+              {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+            </span>
+
+          </div>
+
+          <div class="order-total">
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              ₹{{ order.totalAmount }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- Customer -->
+        <div class="customer-section">
+
+          <div class="section-title">
+            Customer Details
+          </div>
+
+          <div class="customer-grid">
+
+            <div class="customer-detail">
+
+              <span>
+                Name
+              </span>
+
+              <strong>
+                {{ order.customerName }}
+              </strong>
+
+            </div>
+
+            <div class="customer-detail">
+
+              <span>
+                Phone
+              </span>
+
+              <strong>
+                {{ order.phone }}
+              </strong>
+
+            </div>
+
+            <div class="customer-detail address-detail">
+
+              <span>
+                Delivery Address
+              </span>
+
+              <strong>
+                {{ order.address }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Items -->
+        <div class="items-section">
+
+          <div class="section-title">
+            Order Items
+          </div>
+
+          <div *ngFor="let item of order.items" class="order-item">
+
+            <div class="item-info">
+
+              <div class="item-image">
+
+                <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.productName" />
+
+                <span *ngIf="!item.imageUrl">
+                  🍬
+                </span>
+
+              </div>
+
+
+              <div class="item-details">
+
+                <strong>
+                  {{ item.productName }}
+                </strong>
+
+                <span>
+                  {{ item.quantity }} × ₹{{ item.price }}
+                </span>
+
+              </div>
+
+            </div>
+
+            <strong class="item-subtotal">
+              ₹{{ item.subtotal }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- Status -->
+        <div class="status-section">
+
+          <div class="status-heading">
+
+            <span class="section-title">
+              Order Status
+            </span>
+
+            <span class="status-badge" [ngClass]="{
+            'status-awaiting':
+              order.status === 'AWAITING_CONFIRMATION',
+
+            'status-confirmed':
+              order.status === 'CONFIRMED',
+
+            'status-processing':
+              order.status === 'PROCESSING',
+
+            'status-ready':
+              order.status === 'READY_FOR_DELIVERY',
+
+            'status-delivered':
+              order.status === 'DELIVERED',
+
+            'status-cancelled':
+              order.status === 'CANCELLED'
+          }">
+              {{ getStatusLabel(order.status) }}
+            </span>
+
+          </div>
+
+
+          <div class="status-control">
+
+            <label>
+              Update Status
+            </label>
+
+            <select [value]="order.status" [disabled]="
+            updatingOrderId() === order._id
+          " (change)="
+            updateStatus(
+              order._id,
+              $any($event.target).value
+            )
+          ">
+
+              <option [value]="order.status">
+                {{ getStatusLabel(order.status) }}
+              </option>
+
+              <option *ngFor="
+              let status of getNextStatuses(order.status)
+            " [value]="status">
+                {{ getStatusLabel(status) }}
+              </option>
+
+            </select>
+
+            <span *ngIf="
+            updatingOrderId() === order._id
+          " class="updating">
+              Updating...
+            </span>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </div>
+
+    <!-- No Filter Results -->
+<div
+  *ngIf="
+    !loading() &&
+    !errorMessage() &&
+    orders().length > 0 &&
+    filteredOrders().length === 0
+  "
+  class="admin-state"
+>
+
+  <div class="empty-icon">
+    🔍
+  </div>
+
+  <h2>
+    No matching orders
+  </h2>
+
+  <p>
+    No orders match your current search or status filter.
+  </p>
+
+</div>
+
+
+  </div>
+
+</div>

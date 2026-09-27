@@ -1,0 +1,257 @@
+<div class="orders-page">
+
+    <div class="orders-container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+
+            <p class="section-eyebrow">
+                YOUR ORDERS
+            </p>
+
+            <h1>
+                My Orders
+            </h1>
+
+            <p>
+                Keep track of your homemade favourites and
+                their delivery status.
+            </p>
+
+        </div>
+
+
+        <!-- Loading -->
+        <div class="orders-state" *ngIf="loading()">
+
+            <div class="loading-spinner"></div>
+
+            <h2>
+                Loading your orders...
+            </h2>
+
+            <p>
+                Please wait while we fetch your orders.
+            </p>
+
+        </div>
+
+
+        <!-- Error -->
+        <div class="orders-state error-state" *ngIf="
+        !loading() &&
+        errorMessage()
+      ">
+
+            <div class="state-icon">
+                !
+            </div>
+
+            <h2>
+                Unable to load orders
+            </h2>
+
+            <p>
+                {{ errorMessage() }}
+            </p>
+
+            <button type="button" class="retry-button" (click)="loadOrders()">
+                Try Again
+            </button>
+
+        </div>
+
+
+        <!-- Empty -->
+        <div class="orders-state" *ngIf="
+        !loading() &&
+        !errorMessage() &&
+        orders().length === 0
+      ">
+
+            <div class="state-icon empty-icon">
+                🛍️
+            </div>
+
+            <p class="empty-eyebrow">
+                NO ORDERS YET
+            </p>
+
+            <h2>
+                Your order history is empty
+            </h2>
+
+            <p>
+                Once you place an order, it will appear here
+                so you can easily track it.
+            </p>
+
+            <a routerLink="/" fragment="products" class="browse-button">
+                Explore Products
+            </a>
+
+        </div>
+
+
+        <!-- Orders -->
+        <div class="orders-list" *ngIf="
+        !loading() &&
+        !errorMessage() &&
+        orders().length > 0
+      ">
+
+            <!-- Order Card -->
+            <article class="order-card" *ngFor="let order of orders()">
+
+                <!-- Order Header -->
+                <div class="order-header">
+
+                    <div class="order-header-left">
+
+                        <p class="order-eyebrow">
+                            ORDER
+                        </p>
+
+                        <h2>
+                            {{ order.orderNumber }}
+                        </h2>
+
+                        <span class="order-date">
+                            {{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="status-badge" [ngClass]="{
+              'status-awaiting':
+                order.status === 'AWAITING_CONFIRMATION',
+
+              'status-confirmed':
+                order.status === 'CONFIRMED',
+
+              'status-processing':
+                order.status === 'PROCESSING',
+
+              'status-ready':
+                order.status === 'READY_FOR_DELIVERY',
+
+              'status-delivered':
+                order.status === 'DELIVERED',
+
+              'status-cancelled':
+                order.status === 'CANCELLED'
+            }">
+                        {{ getStatusLabel(order.status) }}
+                    </div>
+
+                </div>
+
+
+                <!-- Order Items -->
+                <div class="order-items">
+
+                    <div class="order-item" *ngFor="let item of order.items">
+
+                        <div class="item-info">
+
+                            <div class="item-image">
+                                <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.productName" />
+
+                                <span *ngIf="!item.imageUrl">
+                                    🍬
+                                </span>
+                            </div>
+
+                            <div class="item-details">
+
+                                <strong>
+                                    {{ item.productName }}
+                                </strong>
+
+                                <span>
+                                    {{ item.quantity }}
+                                    × ₹{{ item.price }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <strong class="item-subtotal">
+                            ₹{{ item.subtotal }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Order Footer -->
+                <div class="order-footer">
+
+                    <div class="footer-detail">
+
+                        <span>
+                            Items
+                        </span>
+
+                        <strong>
+                            {{ order.items.length }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="footer-detail">
+
+                        <span>
+                            Delivery
+                        </span>
+
+                        <strong class="delivery-status">
+                            Confirmed later
+                        </strong>
+
+                    </div>
+
+
+                    <div class="footer-total">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <strong>
+                            ₹{{ order.totalAmount }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <!-- Bottom Action -->
+        <div class="orders-bottom-action" *ngIf="
+        !loading() &&
+        !errorMessage() &&
+        orders().length > 0
+      ">
+
+            <p>
+                Looking for something delicious?
+            </p>
+
+            <a routerLink="/" fragment="products">
+                Continue Shopping →
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
