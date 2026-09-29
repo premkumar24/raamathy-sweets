@@ -28,6 +28,9 @@ const notifyNewOrder = async (order) => {
             )
             .join("");
 
+        const orderUrl =
+            `${process.env.FRONTEND_URL}/admin/orders?orderId=${order.orderNumber}`;
+
         const html = `
             <div style="
                 font-family: Arial, sans-serif;
@@ -138,6 +141,28 @@ const notifyNewOrder = async (order) => {
 
                 <hr>
 
+                <div style="
+    margin: 25px 0;
+    text-align: center;
+">
+    <a
+        href="${orderUrl}"
+        target="_blank"
+        style="
+            display: inline-block;
+            padding: 12px 22px;
+            background: #8b5e3c;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        "
+    >
+        View Order in Admin Panel
+    </a>
+</div>
+
                 <p style="
                     color: #777;
                     font-size: 13px;
@@ -151,34 +176,34 @@ const notifyNewOrder = async (order) => {
         `;
 
         const pdfBuffer =
-    await generateInvoiceBuffer(order);
+            await generateInvoiceBuffer(order);
 
-const { data, error } =
-    await resend.emails.send({
+        const { data, error } =
+            await resend.emails.send({
 
-        from:
-            "Raamathy Sweets <onboarding@resend.dev>",
+                from:
+                    "Raamathy Sweets <onboarding@resend.dev>",
 
-        to: [
-            process.env.ADMIN_EMAIL
-        ],
+                to: [
+                    process.env.ADMIN_EMAIL
+                ],
 
-        subject:
-            `New Order - ${order.orderNumber}`,
+                subject:
+                    `New Order - ${order.orderNumber}`,
 
-        html,
+                html,
 
-        attachments: [
-            {
-                filename:
-                    `${order.orderNumber}.pdf`,
+                attachments: [
+                    {
+                        filename:
+                            `${order.orderNumber}.pdf`,
 
-                content:
-                    pdfBuffer
-            }
-        ]
+                        content:
+                            pdfBuffer
+                    }
+                ]
 
-    });
+            });
 
         if (error) {
 

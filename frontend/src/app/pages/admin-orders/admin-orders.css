@@ -733,6 +733,230 @@ font-size: 11px;
   border-color: var(--primary);
 }
 
+/* ==================================================
+   Delivery Section
+   ================================================== */
+
+.delivery-section {
+  margin-top: 24px;
+  padding: 22px;
+  background: #faf9f7;
+  border: 1px solid #e8e2da;
+  border-radius: 12px;
+}
+
+.delivery-section .section-title {
+  margin-bottom: 18px;
+}
+
+
+/* Delivery Controls */
+
+.delivery-control {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.delivery-control label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5f574f;
+}
+
+
+/* Inputs and Selects */
+
+.delivery-control input,
+.delivery-control select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 10px 12px;
+
+  border: 1px solid #dcd5cc;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #332c27;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.delivery-control input:focus,
+.delivery-control select:focus {
+  border-color: #8b5e3c;
+
+  box-shadow:
+    0 0 0 3px rgba(139, 94, 60, 0.10);
+}
+
+.delivery-control input::placeholder {
+  color: #aaa19a;
+}
+
+
+/* Courier Fields */
+
+.courier-details {
+  margin-top: 6px;
+}
+
+.delivery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+
+/* Save Button */
+
+.save-delivery {
+  margin-top: 4px;
+
+  min-height: 42px;
+  padding: 10px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #8b5e3c;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.save-delivery:hover:not(:disabled) {
+  background: #744b2f;
+}
+
+.save-delivery:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.save-delivery:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.back-to-orders {
+  margin-bottom: 18px;
+}
+
+.back-to-orders a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b5e3c;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.back-to-orders a:hover {
+  color: #744b2f;
+}
+
+.all-orders-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: #8b5e3c;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.all-orders-button:hover {
+  background: #744b2f;
+}
+
+.all-orders-button:active {
+  transform: translateY(1px);
+}
+
+.all-orders-button span {
+  font-size: 17px;
+  padding-right: 4px;
+  line-height: 1;
+}
+
+.save-delivery {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.button-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: button-spin 0.7s linear infinite;
+}
+
+.field-error {
+  margin-top: 2px;
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+  .delivery-section {
+    padding: 16px;
+  }
+
+  .delivery-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .save-delivery {
+    width: 100%;
+  }
+
+}
 
 /* --------------------------------------------------
    Mobile

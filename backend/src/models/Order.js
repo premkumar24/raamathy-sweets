@@ -101,6 +101,47 @@ const orderSchema = new mongoose.Schema(
                 "CANCELLED"
             ],
             default: "AWAITING_CONFIRMATION"
+        },
+        delivery: {
+            method: {
+                type: String,
+                enum: ["offline", "courier"],
+                default: null
+            },
+
+            courierName: {
+                type: String,
+                default: ""
+            },
+
+            trackingId: {
+                type: String,
+                default: ""
+            },
+
+            trackingUrl: {
+                type: String,
+                default: ""
+            },
+
+            shipmentStatus: {
+                type: String,
+                enum: [
+                    "not_shipped",
+                    "in_transit",
+                    "out_for_delivery",
+                    "delivered"
+                ],
+                default: "not_shipped"
+            },
+
+            shippedAt: {
+                type: Date
+            },
+
+            deliveredAt: {
+                type: Date
+            }
         }
     },
     {

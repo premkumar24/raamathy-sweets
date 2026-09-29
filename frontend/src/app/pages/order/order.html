@@ -183,7 +183,8 @@
               Place Order
             </span>
 
-            <span *ngIf="isSubmitting()">
+            <span *ngIf="isSubmitting()" class="button-loading">
+              <span class="button-spinner"></span>
               Placing Order...
             </span>
 
@@ -278,14 +279,14 @@
 
             <span>
               ₹{{
-  checkoutItems().reduce(
-    (total, item) =>
-      total +
-      item.product.price *
-      item.quantity,
-    0
-  )
-}}
+              checkoutItems().reduce(
+              (total, item) =>
+              total +
+              item.product.price *
+              item.quantity,
+              0
+              )
+              }}
             </span>
 
           </div>
@@ -315,14 +316,14 @@
 
             <strong>
               ₹{{
-  checkoutItems().reduce(
-    (total, item) =>
-      total +
-      item.product.price *
-      item.quantity,
-    0
-  )
-}}
+              checkoutItems().reduce(
+              (total, item) =>
+              total +
+              item.product.price *
+              item.quantity,
+              0
+              )
+              }}
             </strong>
 
           </div>

@@ -89,4 +89,68 @@ export class Orders implements OnInit {
         char.toUpperCase()
       );
   }
+
+  getShipmentStatusLabel(
+  status:
+    | 'not_shipped'
+    | 'in_transit'
+    | 'out_for_delivery'
+    | 'delivered'
+    | undefined
+): string {
+
+  switch (status) {
+
+    case 'not_shipped':
+      return 'Not Shipped';
+
+    case 'in_transit':
+      return 'In Transit';
+
+    case 'out_for_delivery':
+      return 'Out for Delivery';
+
+    case 'delivered':
+      return 'Delivered';
+
+    default:
+      return 'Not Shipped';
+
+  }
+
+}
+
+isShipmentStepCompleted(
+  currentStatus:
+    | 'not_shipped'
+    | 'in_transit'
+    | 'out_for_delivery'
+    | 'delivered'
+    | undefined,
+
+  step:
+    | 'not_shipped'
+    | 'in_transit'
+    | 'out_for_delivery'
+    | 'delivered'
+): boolean {
+
+  const order = [
+    'not_shipped',
+    'in_transit',
+    'out_for_delivery',
+    'delivered'
+  ];
+
+  const currentIndex =
+    order.indexOf(
+      currentStatus || 'not_shipped'
+    );
+
+  const stepIndex =
+    order.indexOf(step);
+
+  return stepIndex <= currentIndex;
+
+}
 }

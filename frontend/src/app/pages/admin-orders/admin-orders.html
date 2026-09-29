@@ -3,6 +3,7 @@
   <div class="admin-container">
 
 
+
     <!-- Page Header -->
     <div class="admin-page-header">
 
@@ -20,9 +21,11 @@
           Manage customer orders and keep track of their progress.
         </p>
 
+
+
       </div>
 
-      <div class="orders-count">
+      <div class="orders-count" *ngIf="!isSpecificOrderView()">
 
         <span>
           Total Orders
@@ -34,82 +37,76 @@
 
       </div>
 
+      <a *ngIf="isSpecificOrderView()" routerLink="/admin/orders" class="all-orders-button">
+        <span>
+          ←
+        </span>
+        Back to All Orders
+      </a>
+
     </div>
 
     <!-- Order Filters -->
-<div class="orders-filters">
+    <div class="orders-filters" *ngIf="!isSpecificOrderView()">
 
-  <div class="filter-group">
+      <div class="filter-group">
 
-    <label for="orderSearch">
-      Search Order ID
-    </label>
+        <label for="orderSearch">
+          Search Order ID
+        </label>
 
-    <input
-      id="orderSearch"
-      type="text"
-      placeholder="Enter order number"
-      [value]="searchOrderId()"
-      (input)="onSearchOrderId($event)"
-    />
+        <input id="orderSearch" type="text" placeholder="Enter order number" [value]="searchOrderId()"
+          (input)="onSearchOrderId($event)" />
 
-  </div>
+      </div>
 
 
-  <div class="filter-group">
+      <div class="filter-group">
 
-    <label for="statusFilter">
-      Order Status
-    </label>
+        <label for="statusFilter">
+          Order Status
+        </label>
 
-    <select
-      id="statusFilter"
-      [value]="selectedStatus()"
-      (change)="onStatusChange($event)"
-    >
+        <select id="statusFilter" [value]="selectedStatus()" (change)="onStatusChange($event)">
 
-      <option value="ALL">
-        All Statuses
-      </option>
+          <option value="ALL">
+            All Statuses
+          </option>
 
-      <option value="AWAITING_CONFIRMATION">
-        Awaiting Confirmation
-      </option>
+          <option value="AWAITING_CONFIRMATION">
+            Awaiting Confirmation
+          </option>
 
-      <option value="CONFIRMED">
-        Confirmed
-      </option>
+          <option value="CONFIRMED">
+            Confirmed
+          </option>
 
-      <option value="PROCESSING">
-        Processing
-      </option>
+          <option value="PROCESSING">
+            Processing
+          </option>
 
-      <option value="READY_FOR_DELIVERY">
-        Ready for Delivery
-      </option>
+          <option value="READY_FOR_DELIVERY">
+            Ready for Delivery
+          </option>
 
-      <option value="DELIVERED">
-        Delivered
-      </option>
+          <option value="DELIVERED">
+            Delivered
+          </option>
 
-      <option value="CANCELLED">
-        Cancelled
-      </option>
+          <option value="CANCELLED">
+            Cancelled
+          </option>
 
-    </select>
+        </select>
 
-  </div>
+      </div>
 
 
-  <button
-    type="button"
-    class="clear-filters"
-    (click)="clearFilters()"
-  >
-    Clear
-  </button>
+      <button type="button" class="clear-filters" (click)="clearFilters()">
+        Clear
+      </button>
 
-</div>
+    </div>
 
     <!-- Error -->
     <div *ngIf="errorMessage()" class="admin-error">
@@ -118,10 +115,17 @@
         !
       </span>
 
-      <span>
-        {{ errorMessage() }}
-      </span>
+      <div>
 
+        <strong>
+          Unable to find order
+        </strong>
+
+        <span>
+          {{ errorMessage() }}
+        </span>
+
+      </div>
     </div>
 
 
@@ -170,7 +174,7 @@
     orders().length > 0
   " class="orders-list">
 
-      <article *ngFor="let order of filteredOrders()" class="order-card">
+      <article *ngFor="let order of filteredOrders()" class="order-card" [id]="'order-' + order._id">
 
         <!-- Order Header -->
         <div class="order-header">
@@ -335,7 +339,10 @@
           </div>
 
 
-          <div class="status-control">
+          <div class="status-control"  *ngIf="
+    order.status !== 'DELIVERED' &&
+    order.status !== 'CANCELLED'
+  ">
 
             <label>
               Update Status
@@ -372,34 +379,202 @@
 
         </div>
 
+        <!-- Delivery -->
+        <div class="delivery-section" *ngIf="order.status === 'READY_FOR_DELIVERY'">
+
+          <div class="section-title">
+            Delivery Details
+          </div>
+
+
+          <div class="delivery-control">
+
+            <label>
+              Delivery Method
+            </label>
+
+            <select [value]="
+        deliveryDrafts[order._id]?.method || 'offline'
+      " [disabled]="
+        updatingDeliveryOrderId() === order._id
+      " (change)="
+        setDeliveryMethod(
+          order._id,
+          $any($event.target).value
+        )
+      ">
+
+              <option value="offline">
+                Offline Delivery
+              </option>
+
+              <option value="courier">
+                Courier / In Transit
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- Courier Details -->
+          <div *ngIf="
+      (deliveryDrafts[order._id]?.method || 'offline')
+        === 'courier'
+    " class="courier-details">
+
+            <div class="delivery-grid">
+
+
+              <!-- Courier Partner -->
+              <div class="delivery-control">
+
+                <label>
+                  Courier Partner
+                  <span class="required">*</span>
+                </label>
+
+                <input type="text" [value]="
+            deliveryDrafts[order._id]?.courierName || ''
+          " placeholder="e.g. ST Courier" (input)="
+            setCourierName(
+              order._id,
+              $any($event.target).value
+            )
+          " />
+                <small *ngIf="deliveryValidationErrors[order._id]?.courierName" class="field-error">
+                  {{ deliveryValidationErrors[order._id]?.courierName }}
+                </small>
+
+              </div>
+
+
+              <!-- Tracking ID -->
+              <div class="delivery-control">
+
+                <label>
+                  Tracking ID
+                  <span class="required">*</span>
+                </label>
+
+                <input type="text" [value]="
+            deliveryDrafts[order._id]?.trackingId || ''
+          " placeholder="Enter tracking ID" (input)="
+            setTrackingId(
+              order._id,
+              $any($event.target).value
+            )
+          " />
+                <small *ngIf="deliveryValidationErrors[order._id]?.trackingId" class="field-error">
+                  {{ deliveryValidationErrors[order._id]?.trackingId }}
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <!-- Tracking URL -->
+            <div class="delivery-control">
+
+              <label>
+                Tracking URL
+              </label>
+
+              <input type="url" [value]="
+          deliveryDrafts[order._id]?.trackingUrl || ''
+        " placeholder="https://..." (input)="
+          setTrackingUrl(
+            order._id,
+            $any($event.target).value
+          )
+        " />
+
+            </div>
+
+
+            <!-- Shipment Status -->
+            <div class="delivery-control">
+
+              <label>
+                Shipment Status
+                <span class="required">*</span>
+              </label>
+
+              <select [value]="
+          deliveryDrafts[order._id]?.shipmentStatus
+          || 'not_shipped'
+        " (change)="
+          setShipmentStatus(
+            order._id,
+            $any($event.target).value
+          )
+        ">
+
+                <option value="not_shipped">
+                  Not Shipped
+                </option>
+
+                <option value="in_transit">
+                  In Transit
+                </option>
+
+                <option value="out_for_delivery">
+                  Out for Delivery
+                </option>
+
+                <option value="delivered">
+                  Delivered
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <!-- Save -->
+          <button type="button" class="save-delivery" [disabled]="updatingDeliveryOrderId() === order._id"
+            (click)="updateDelivery(order._id)">
+            <span *ngIf="updatingDeliveryOrderId() === order._id" class="button-spinner"></span>
+
+            {{
+            updatingDeliveryOrderId() === order._id
+            ? 'Saving...'
+            : 'Save Delivery Details'
+            }}
+          </button>
+
+        </div>
+
       </article>
+
+
 
     </div>
 
     <!-- No Filter Results -->
-<div
-  *ngIf="
+    <div *ngIf="
     !loading() &&
     !errorMessage() &&
     orders().length > 0 &&
     filteredOrders().length === 0
-  "
-  class="admin-state"
->
+  " class="admin-state">
 
-  <div class="empty-icon">
-    🔍
-  </div>
+      <div class="empty-icon">
+        🔍
+      </div>
 
-  <h2>
-    No matching orders
-  </h2>
+      <h2>
+        No matching orders
+      </h2>
 
-  <p>
-    No orders match your current search or status filter.
-  </p>
+      <p>
+        No orders match your current search or status filter.
+      </p>
 
-</div>
+    </div>
 
 
   </div>

@@ -186,6 +186,186 @@
 
                 </div>
 
+                <!-- Offline Delivery -->
+
+                <div class="offline-delivery" *ngIf="order.delivery?.method === 'offline'">
+
+                    <div class="offline-delivery-icon">
+                        ✓
+                    </div>
+
+                    <div class="offline-delivery-content">
+
+                        <p class="delivery-eyebrow">
+                            DELIVERY
+                        </p>
+
+                        <h3>
+                            {{
+                            order.status === 'DELIVERED'
+                            ? 'Delivered'
+                            : 'Offline Delivery'
+                            }}
+                        </h3>
+
+                        <p>
+                            {{
+                            order.status === 'DELIVERED'
+                            ? 'Your order has been delivered successfully.'
+                            : 'Your order will be delivered directly.'
+                            }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- Delivery Tracking -->
+                <div class="delivery-tracking" *ngIf="order.delivery?.method === 'courier'">
+
+                    <div class="delivery-header">
+
+                        <div>
+
+                            <p class="delivery-eyebrow">
+                                DELIVERY
+                            </p>
+
+                            <h3>
+                                {{
+                                order.delivery?.shipmentStatus === 'delivered'
+                                ? 'Delivered'
+                                : 'Courier Delivery'
+                                }}
+                            </h3>
+                            <p class="delivery-message" *ngIf="order.delivery?.shipmentStatus === 'delivered'">
+                                Your order has been delivered successfully.
+                            </p>
+
+                        </div>
+
+                        <span class="shipment-badge">
+                            {{ getShipmentStatusLabel(
+                            order.delivery?.shipmentStatus
+                            ) }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Courier Information -->
+                    <div class="delivery-info">
+
+                        <div class="delivery-info-item">
+
+                            <span>
+                                Courier Partner
+                            </span>
+
+                            <strong>
+                                {{ order.delivery?.courierName }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="delivery-info-item">
+
+                            <span>
+                                Tracking ID
+                            </span>
+
+                            <strong>
+                                {{ order.delivery?.trackingId }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Tracking Button -->
+                    <div class="tracking-action" *ngIf="order.delivery?.trackingUrl">
+
+                        <a class="track-delivery-button" [href]="order.delivery?.trackingUrl" target="_blank"
+                            rel="noopener noreferrer">
+                            Track Delivery
+                            <span>→</span>
+                        </a>
+
+                    </div>
+
+
+                    <!-- Delivery Progress -->
+                    <div class="delivery-progress">
+
+                        <div class="progress-step" [class.completed]="
+                isShipmentStepCompleted(
+                    order.delivery?.shipmentStatus,
+                    'not_shipped'
+                )
+            ">
+
+                            <div class="progress-dot"></div>
+
+                            <span>
+                                Order Confirmed
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress-step" [class.completed]="
+                isShipmentStepCompleted(
+                    order.delivery?.shipmentStatus,
+                    'in_transit'
+                )
+            ">
+
+                            <div class="progress-dot"></div>
+
+                            <span>
+                                In Transit
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress-step" [class.completed]="
+                isShipmentStepCompleted(
+                    order.delivery?.shipmentStatus,
+                    'out_for_delivery'
+                )
+            ">
+
+                            <div class="progress-dot"></div>
+
+                            <span>
+                                Out for Delivery
+                            </span>
+
+                        </div>
+
+
+                        <div class="progress-step" [class.completed]="
+                isShipmentStepCompleted(
+                    order.delivery?.shipmentStatus,
+                    'delivered'
+                )
+            ">
+
+                            <div class="progress-dot"></div>
+
+                            <span>
+                                Delivered
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
 
                 <!-- Order Footer -->
                 <div class="order-footer">
@@ -209,8 +389,23 @@
                             Delivery
                         </span>
 
-                        <strong class="delivery-status">
-                            Confirmed later
+                        <strong class="delivery-status" [ngClass]="{
+            'delivery-pending':
+                !order.delivery?.method,
+
+            'delivery-offline':
+                order.delivery?.method === 'offline',
+
+            'delivery-courier':
+                order.delivery?.method === 'courier'
+        }">
+                            {{
+                            !order.delivery?.method
+                            ? 'Not Assigned'
+                            : order.delivery.method === 'offline'
+                            ? 'Offline Delivery'
+                            : 'Courier Delivery'
+                            }}
                         </strong>
 
                     </div>

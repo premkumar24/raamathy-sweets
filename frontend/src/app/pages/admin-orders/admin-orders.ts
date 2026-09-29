@@ -1,37 +1,44 @@
-import {
-  Component,
-  OnInit,
-  signal,
-  computed
-} from '@angular/core';
-
+import {  Component,  OnInit,  signal,  computed} from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
-import {
-  Order,
-  OrdersService
-} from '../../services/orders';
-
+import {  Order, OrdersService} from '../../services/orders';
+import { ToastService } from '../../services/toast';
 @Component({
   selector: 'app-admin-orders',
-
-  imports: [
-    CommonModule
-  ],
-
+  imports: [CommonModule,RouterLink],
   templateUrl: './admin-orders.html',
-
   styleUrl: './admin-orders.css'
 })
 export class AdminOrders implements OnInit {
 
   orders = signal<Order[]>([]);
-
   loading = signal(true);
-
   errorMessage = signal('');
-
+  highlightedOrderId = signal<string | null>(null);
+  isSpecificOrderView = signal(false);
   updatingOrderId = signal<string | null>(null);
+  updatingDeliveryOrderId = signal<string | null>(null);
+deliveryValidationErrors: {
+  [orderId: string]: {
+    courierName?: string;
+    trackingId?: string;
+  };
+} = {};
+
+
+deliveryDrafts: {
+  [orderId: string]: {
+    method: 'offline' | 'courier';
+    courierName: string;
+    trackingId: string;
+    trackingUrl: string;
+    shipmentStatus:
+      | 'not_shipped'
+      | 'in_transit'
+      | 'out_for_delivery'
+      | 'delivered';
+  }
+} = {};
 
   // --------------------------------------------------
   // Filters
@@ -73,53 +80,141 @@ export class AdminOrders implements OnInit {
   });
 
   constructor(
-    private ordersService: OrdersService
+    private ordersService: OrdersService,
+     private route: ActivatedRoute,
+     private toastService: ToastService
   ) {}
 
-  ngOnInit(): void {
+ngOnInit(): void {
+
+  this.route.queryParamMap.subscribe(() => {
 
     this.loadOrders();
 
-  }
+  });
+
+}
 
   loadOrders(): void {
 
-    this.loading.set(true);
+  this.loading.set(true);
 
-    this.errorMessage.set('');
+  this.errorMessage.set('');
 
-    this.ordersService
-      .getAllOrders()
-      .subscribe({
+  const orderId =
+    this.route.snapshot.queryParamMap.get(
+      'orderId'
+    );
 
-        next: (response) => {
+  this.isSpecificOrderView.set(
+    !!orderId
+  );
+
+  this.ordersService
+    .getAllOrders()
+    .subscribe({
+
+      next: (response) => {
+
+        // Specific order view
+        if (orderId) {
+
+          const selectedOrder =
+            response.orders.find(
+              order =>
+                order.orderNumber === orderId
+            );
+
+          if (selectedOrder) {
+
+            this.orders.set([
+              selectedOrder
+            ]);
+
+            this.highlightedOrderId.set(
+              selectedOrder._id
+            );
+
+          } else {
+
+            this.orders.set([]);
+
+            this.errorMessage.set(
+              `Order ${orderId} was not found.`
+            );
+
+          }
+
+        }
+
+        // Normal all-orders view
+        else {
 
           this.orders.set(
             response.orders
           );
 
-          this.loading.set(false);
-
-        },
-
-        error: (error) => {
-
-          console.error(
-            'ADMIN ORDERS ERROR:',
-            error
+          this.highlightedOrderId.set(
+            null
           );
-
-          this.errorMessage.set(
-            'Unable to load orders.'
-          );
-
-          this.loading.set(false);
 
         }
 
-      });
+        // Initialize delivery drafts
+        this.deliveryDrafts = {};
 
-  }
+        response.orders.forEach(order => {
+
+          this.deliveryDrafts[order._id] = {
+
+            method:
+              order.delivery?.method ||
+              'offline',
+
+            courierName:
+              order.delivery?.courierName ||
+              '',
+
+            trackingId:
+              order.delivery?.trackingId ||
+              '',
+
+            trackingUrl:
+              order.delivery?.trackingUrl ||
+              '',
+
+            shipmentStatus:
+              order.delivery?.shipmentStatus ||
+              'not_shipped'
+
+          };
+
+        });
+
+        this.loading.set(false);
+
+      },
+
+      error: (error) => {
+
+        console.error(
+          'ADMIN ORDERS ERROR:',
+          error
+        );
+
+        this.orders.set([]);
+
+        this.errorMessage.set(
+          'Unable to load orders.'
+        );
+
+        this.loading.set(false);
+
+      }
+
+    });
+
+}
 
   // --------------------------------------------------
   // Filter handlers
@@ -207,6 +302,208 @@ onStatusChange(event: Event): void {
 
   }
 
+  updateDelivery(
+  orderId: string
+): void {
+
+  const draft = this.deliveryDrafts[orderId];
+
+  if (!draft) {
+    this.errorMessage.set(
+      'Please select delivery details.'
+    );
+
+    return;
+  }
+
+  this.deliveryValidationErrors[orderId] = {};
+
+if (draft.method === 'courier') {
+
+  if (!draft.courierName.trim()) {
+    this.deliveryValidationErrors[orderId].courierName =
+      'Courier partner is required.';
+  }
+
+  if (!draft.trackingId.trim()) {
+    this.deliveryValidationErrors[orderId].trackingId =
+      'Tracking ID is required.';
+  }
+
+  if (
+    Object.keys(
+      this.deliveryValidationErrors[orderId]
+    ).length > 0
+  ) {
+    return;
+  }
+}
+
+  this.updatingDeliveryOrderId.set(orderId);
+
+  this.errorMessage.set('');
+
+  this.ordersService
+    .updateDeliveryDetails(
+      orderId,
+      draft
+    )
+    .subscribe({
+
+      next: (response) => {
+
+        this.orders.update(
+          orders =>
+            orders.map(order =>
+              order._id === orderId
+                ? response.order
+                : order
+            )
+        );
+        this.toastService.show(
+    'Updated Delivery Details'
+  );
+        this.updatingDeliveryOrderId.set(null);
+
+      },
+
+      error: (error) => {
+
+        this.toastService.show(
+    'Failed to save Delivery Details, Try sometime later','error'
+  );
+        console.error(
+          'UPDATE DELIVERY ERROR:',
+          error
+        );
+
+        this.errorMessage.set(
+          'Unable to update delivery details.'
+        );
+
+        this.updatingDeliveryOrderId.set(null);
+
+      }
+
+    });
+
+}
+
+setDeliveryMethod(
+  orderId: string,
+  method: 'offline' | 'courier'
+): void {
+
+  if (!this.deliveryDrafts[orderId]) {
+    this.deliveryDrafts[orderId] = {
+      method,
+      courierName: '',
+      trackingId: '',
+      trackingUrl: '',
+      shipmentStatus: 'not_shipped'
+    };
+  } else {
+    this.deliveryDrafts[orderId].method = method;
+  }
+
+  this.deliveryDrafts = {
+    ...this.deliveryDrafts
+  };
+}
+
+setCourierName(
+  orderId: string,
+  courierName: string
+): void {
+
+  if (!this.deliveryDrafts[orderId]) {
+    this.deliveryDrafts[orderId] = {
+      method: 'courier',
+      courierName: '',
+      trackingId: '',
+      trackingUrl: '',
+      shipmentStatus: 'not_shipped'
+    };
+  }
+
+  this.deliveryDrafts[orderId].courierName = courierName;
+
+  this.deliveryDrafts = {
+    ...this.deliveryDrafts
+  };
+}
+
+setTrackingId(
+  orderId: string,
+  trackingId: string
+): void {
+
+  if (!this.deliveryDrafts[orderId]) {
+    this.deliveryDrafts[orderId] = {
+      method: 'courier',
+      courierName: '',
+      trackingId: '',
+      trackingUrl: '',
+      shipmentStatus: 'not_shipped'
+    };
+  }
+
+  this.deliveryDrafts[orderId].trackingId = trackingId;
+
+  this.deliveryDrafts = {
+    ...this.deliveryDrafts
+  };
+}
+
+setTrackingUrl(
+  orderId: string,
+  trackingUrl: string
+): void {
+
+  if (!this.deliveryDrafts[orderId]) {
+    this.deliveryDrafts[orderId] = {
+      method: 'courier',
+      courierName: '',
+      trackingId: '',
+      trackingUrl: '',
+      shipmentStatus: 'not_shipped'
+    };
+  }
+
+  this.deliveryDrafts[orderId].trackingUrl = trackingUrl;
+
+  this.deliveryDrafts = {
+    ...this.deliveryDrafts
+  };
+}
+
+setShipmentStatus(
+  orderId: string,
+  shipmentStatus:
+    | 'not_shipped'
+    | 'in_transit'
+    | 'out_for_delivery'
+    | 'delivered'
+): void {
+
+  if (!this.deliveryDrafts[orderId]) {
+    this.deliveryDrafts[orderId] = {
+      method: 'offline',
+      courierName: '',
+      trackingId: '',
+      trackingUrl: '',
+      shipmentStatus
+    };
+  } else {
+    this.deliveryDrafts[orderId].shipmentStatus =
+      shipmentStatus;
+  }
+
+  this.deliveryDrafts = {
+    ...this.deliveryDrafts
+  };
+}
+
   getNextStatuses(
     status: string
   ): string[] {
@@ -284,5 +581,7 @@ onStatusChange(event: Event): void {
     }
 
   }
+
+
 
 }

@@ -554,6 +554,412 @@
   font-size: 10px;
 }
 
+/* ==================================================
+   Delivery Tracking
+   ================================================== */
+
+.delivery-tracking {
+    margin-top: 24px;
+    padding: 22px;
+    background: #faf9f7;
+    border: 1px solid #e8e2da;
+    border-radius: 12px;
+}
+
+
+/* Header */
+
+.delivery-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.delivery-eyebrow {
+    margin: 0 0 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #8b5e3c;
+}
+
+.delivery-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #332c27;
+}
+
+
+/* Shipment Badge */
+
+.shipment-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 20px;
+
+    background: #eee8e2;
+    color: #6d5542;
+
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* Courier Information */
+
+.delivery-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    padding: 16px;
+
+    background: #ffffff;
+    border: 1px solid #ebe5df;
+    border-radius: 9px;
+}
+
+.delivery-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.delivery-info-item span {
+    font-size: 12px;
+    color: #8a8179;
+}
+
+.delivery-info-item strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3b332d;
+    word-break: break-word;
+}
+
+
+/* Tracking Button */
+
+.tracking-action {
+    margin-top: 16px;
+}
+
+.track-delivery-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 0 18px;
+
+    border-radius: 8px;
+
+    background: #8b5e3c;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
+}
+
+.track-delivery-button:hover {
+    background: #744b2f;
+}
+
+.track-delivery-button:active {
+    transform: translateY(1px);
+}
+
+.track-delivery-button span {
+    font-size: 17px;
+}
+
+
+/* Delivery Progress */
+
+/* ==================================================
+   Delivery Progress
+   ================================================== */
+
+/* ==================================================
+   Delivery Progress
+   ================================================== */
+
+.delivery-progress {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 26px;
+    padding-top: 6px;
+}
+
+.progress-step {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-width: 0;
+
+    color: #aaa19a;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+}
+
+
+/* --------------------------------
+   Progress Line
+   -------------------------------- */
+
+.progress-step:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    top: 7px;
+
+    left: calc(50% + 8px);
+    right: calc(-50% + 8px);
+
+    height: 2px;
+
+    background: #e4ded7;
+}
+
+
+/* --------------------------------
+   Progress Dot
+   -------------------------------- */
+
+.progress-dot {
+    position: relative;
+    z-index: 2;
+
+    width: 14px;
+    height: 14px;
+
+    margin-bottom: 9px;
+
+    border-radius: 50%;
+
+    background: #e4ded7;
+
+    border: 3px solid #faf9f7;
+}
+
+
+/* --------------------------------
+   Completed Step
+   -------------------------------- */
+
+.progress-step.completed {
+    color: #6d5542;
+    font-weight: 600;
+}
+
+.progress-step.completed .progress-dot {
+    background: #8b5e3c;
+}
+
+
+/* --------------------------------
+   Completed Connection
+   -------------------------------- */
+
+/*
+   The line BEFORE the current step becomes completed.
+
+   In Transit:
+
+   ●━━━━━━●────────○────────○
+   Confirmed  In Transit  Out for Delivery  Delivered
+*/
+
+.progress-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: calc(50% + 8px);
+    right: calc(-50% + 8px);
+    height: 2px;
+    background: #e4ded7;
+}
+
+/* Fill the line only when the NEXT step is completed */
+.progress-step:has(+ .progress-step.completed)::after {
+    background: #8b5e3c;
+}
+
+/* Completed step text */
+.progress-step.completed {
+    color: #6d5542;
+    font-weight: 600;
+}
+
+/* Completed dot */
+.progress-step.completed .progress-dot {
+    background: #8b5e3c;
+    border-color: #faf9f7;
+}
+
+
+.offline-delivery {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+    padding: 18px 20px;
+    background: #faf9f7;
+    border: 1px solid #e8e2da;
+    border-radius: 12px;
+}
+
+.offline-delivery-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e9f7f1;
+    color: #277653;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.offline-delivery-content {
+    min-width: 0;
+}
+
+.offline-delivery-content .delivery-eyebrow {
+    margin-bottom: 4px;
+}
+
+.offline-delivery-content h3 {
+    margin: 0;
+    color: #332c27;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.offline-delivery-content p:last-child {
+    margin: 4px 0 0;
+    color: #8a8179;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.delivery-message {
+    margin: 5px 0 0;
+    color: #6d5542;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 550px) {
+
+    .offline-delivery {
+        padding: 16px;
+    }
+
+}
+
+/* --------------------------------
+   Mobile
+   -------------------------------- */
+
+@media (max-width: 700px) {
+
+    .delivery-tracking {
+        padding: 16px;
+    }
+
+    .delivery-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .delivery-info {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .track-delivery-button {
+        width: 100%;
+    }
+
+
+    .delivery-progress {
+        display: flex;
+        flex-direction: column;
+
+        gap: 18px;
+
+        margin-top: 24px;
+        padding-left: 8px;
+    }
+
+
+    .progress-step {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+
+        text-align: left;
+    }
+
+
+    .progress-dot {
+        flex-shrink: 0;
+
+        margin-bottom: 0;
+    }
+
+
+    /* Grey vertical line */
+
+    .progress-step:not(:last-child)::after {
+        top: 18px;
+        left: 6px;
+
+        right: auto;
+
+        width: 2px;
+        height: 18px;
+
+        background: #e4ded7;
+    }
+
+
+    /* Completed vertical connection */
+
+    .progress-step.completed + .progress-step::before {
+        top: -18px;
+        left: 6px;
+
+        right: auto;
+
+        width: 2px;
+        height: 18px;
+
+        background: #8b5e3c;
+    }
+
+}
+
 
 /* Tablet */
 

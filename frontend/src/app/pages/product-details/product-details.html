@@ -235,9 +235,10 @@
 
 
   <!-- Loading -->
-  <div class="page-message" *ngIf="loading()">
-    Loading product...
-  </div>
+  <div class="loading-state" *ngIf="loading()">
+  <div class="loading-spinner"></div>
+  <p>Loading product details...</p>
+</div>
 
 
   <!-- Error -->

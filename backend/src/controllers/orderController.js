@@ -385,6 +385,131 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+const updateDeliveryDetails = async (req, res) => {
+    try {
+        const {
+            method,
+            courierName,
+            trackingId,
+            trackingUrl,
+            shipmentStatus
+        } = req.body;
+
+        const allowedMethods = [
+            "offline",
+            "courier"
+        ];
+
+        const allowedShipmentStatuses = [
+            "not_shipped",
+            "in_transit",
+            "out_for_delivery",
+            "delivered"
+        ];
+
+        if (!allowedMethods.includes(method)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid delivery method"
+            });
+        }
+
+        if (
+            shipmentStatus &&
+            !allowedShipmentStatuses.includes(shipmentStatus)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid shipment status"
+            });
+        }
+
+        // Courier orders require tracking details
+        if (
+            method === "courier" &&
+            (!courierName || !trackingId)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Courier name and tracking ID are required"
+            });
+        }
+
+        const order =
+            await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        if (order.status !== "READY_FOR_DELIVERY") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Delivery details can only be updated when the order is ready for delivery"
+            });
+        }
+
+        order.delivery = {
+            method,
+            courierName:
+                method === "courier"
+                    ? courierName
+                    : "",
+            trackingId:
+                method === "courier"
+                    ? trackingId
+                    : "",
+            trackingUrl:
+                method === "courier"
+                    ? trackingUrl || ""
+                    : "",
+            shipmentStatus:
+                shipmentStatus || "not_shipped",
+
+            shippedAt:
+                shipmentStatus === "in_transit"
+                    ? new Date()
+                    : order.delivery?.shippedAt,
+
+            deliveredAt:
+                shipmentStatus === "delivered"
+                    ? new Date()
+                    : order.delivery?.deliveredAt
+        };
+
+        if (shipmentStatus === "delivered") {
+            order.status = "DELIVERED";
+        }
+
+        await order.save();
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Delivery details updated successfully",
+            order
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Update delivery details error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Unable to update delivery details"
+        });
+    }
+};
+
 module.exports = {
-    createOrder, getOrders, getMyOrders, updateOrderStatus, downloadInvoice
+    createOrder, getOrders, getMyOrders, updateOrderStatus, downloadInvoice, updateDeliveryDetails
 };

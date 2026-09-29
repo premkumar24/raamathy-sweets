@@ -22,6 +22,7 @@ export interface Order {
   status: string;
   createdAt: string;
   updatedAt: string;
+  delivery?: Delivery;
 }
 
 export interface OrdersResponse {
@@ -30,6 +31,20 @@ export interface OrdersResponse {
   orders: Order[];
 }
  
+export interface Delivery {
+  method: 'offline' | 'courier';
+  courierName: string;
+  trackingId: string;
+  trackingUrl: string;
+  shipmentStatus:
+    | 'not_shipped'
+    | 'in_transit'
+    | 'out_for_delivery'
+    | 'delivered';
+  shippedAt?: string;
+  deliveredAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -67,6 +82,18 @@ updateOrderStatus(
     {
       status
     }
+  );
+
+}
+
+updateDeliveryDetails(
+  orderId: string,
+  delivery: Delivery
+): Observable<any> {
+
+  return this.http.put(
+    `${this.apiUrl}/${orderId}/delivery`,
+    delivery
   );
 
 }
