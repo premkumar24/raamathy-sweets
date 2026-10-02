@@ -102,6 +102,50 @@ const orderSchema = new mongoose.Schema(
             ],
             default: "AWAITING_CONFIRMATION"
         },
+        payment: {
+            method: {
+                type: String,
+                enum: [
+                    "online",
+                    "offline"
+                ],
+                default: "offline"
+            },
+
+            gateway: {
+                type: String,
+                default: ""
+            },
+
+            gatewayOrderId: {
+                type: String,
+                default: ""
+            },
+
+            status: {
+                type: String,
+                enum: [
+                    "PENDING",
+                    "SUCCESS",
+                    "FAILED"
+                ],
+                default: "PENDING"
+            },
+
+            transactionId: {
+                type: String,
+                default: ""
+            },
+
+            paidAt: {
+                type: Date
+            },
+
+            paymentNotificationSent: {
+                type: Boolean,
+                default: false
+            }
+        },
         delivery: {
             method: {
                 type: String,

@@ -13,6 +13,7 @@ export interface CreateOrderRequest {
 customerName: string;
 phone: string;
 address: string;
+paymentMethod: 'online' | 'offline';
 items: OrderItemRequest[];
 }
 

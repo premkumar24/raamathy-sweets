@@ -1,0 +1,176 @@
+<div class="payment-page">
+
+    <!-- Checking payment -->
+    @if (loading()) {
+
+    <div class="payment-card">
+
+        <div class="spinner"></div>
+
+        <h2>Verifying Payment</h2>
+
+        <p>
+            Please wait while we confirm your payment.
+        </p>
+
+    </div>
+
+    }
+
+    <!-- Payment successful -->
+    @else if (paymentSuccess()) {
+
+    <div class="payment-card success">
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <h2>Payment Successful</h2>
+
+        <p>
+            Your payment has been successfully confirmed.
+        </p>
+
+        <p class="order-id">
+            Order ID: {{ orderId }}
+        </p>
+
+        <div class="actions">
+
+            <button type="button" (click)="goToOrders()">
+                View My Orders
+            </button>
+
+            <button type="button" class="secondary" (click)="goToHome()">
+                Continue Shopping
+            </button>
+
+        </div>
+
+    </div>
+
+    }
+
+    <!-- Payment failed / pending / verification problem -->
+    @else {
+
+    <div class="payment-card error">
+
+        <!-- Payment failed -->
+        @if (paymentFailed()) {
+
+        <div class="error-icon">
+            ✕
+        </div>
+
+        <h2>Payment Failed</h2>
+
+        <p>
+            Your online payment was not successful.
+        </p>
+
+        <div class="payment-info">
+
+            <div class="payment-info-title">
+
+                <span class="info-icon">
+                    ℹ
+                </span>
+
+                <strong>
+                    Your order has been received
+                </strong>
+
+            </div>
+
+            <p>
+                You can complete the payment offline.
+                Our team will contact you to confirm
+                the order and payment.
+            </p>
+
+        </div>
+
+        }
+
+        <!-- Payment pending -->
+        @else if (paymentPending()) {
+
+        <div class="error-icon">
+            !
+        </div>
+
+        <h2>Payment Pending</h2>
+
+        <p>
+            Your payment is still being processed.
+            Please check your order status again shortly.
+        </p>
+
+        <button type="button" (click)="verifyPayment()" [disabled]="checkingPayment()">
+            @if (checkingPayment()) {
+            Checking Payment...
+            } @else {
+            Check Payment Again
+            }
+        </button>
+
+        }
+
+        <!-- Payment verification problem -->
+        @else {
+
+        @if (orderNotFound()) {
+
+        <div class="error-icon">
+            !
+        </div>
+
+        <h2>Order Not Found</h2>
+
+        <p>
+            We could not find this order.
+        </p>
+
+        <p>
+            Please check your order ID or contact us.
+        </p>
+
+        } @else {
+
+        <div class="error-icon">
+            !
+        </div>
+
+        <h2>Payment Not Confirmed</h2>
+
+        <p>
+            {{ errorMessage() }}
+        </p>
+
+        }
+
+        }
+
+        <p class="order-id">
+            Order ID: {{ orderId }}
+        </p>
+
+        <div class="actions">
+
+            <button type="button" (click)="goToOrders()">
+                View My Orders
+            </button>
+
+            <button type="button" class="secondary" (click)="goToHome()">
+                Go to Home
+            </button>
+
+        </div>
+
+    </div>
+
+    }
+
+</div>

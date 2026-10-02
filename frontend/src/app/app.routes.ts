@@ -13,6 +13,7 @@ import { AdminProducts } from './pages/admin-products/admin-products';
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
+import { PaymentSuccess } from './pages/payment-success/payment-success';
 
 export const routes: Routes = [
 
@@ -51,6 +52,11 @@ canActivate: [authGuard]
 path: 'login',
 component: Login
 },
+{
+  path: 'payment-success',
+  component: PaymentSuccess,
+  canActivate: [authGuard]
+},
 
 /* ================================
 Admin
@@ -80,6 +86,7 @@ children: [
 ]
 
 
-}
+},
+
 
 ];

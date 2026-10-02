@@ -668,6 +668,82 @@
   animation: button-spin 0.7s linear infinite;
 }
 
+/* Payment Method */
+
+.payment-method {
+  margin-top: 25px;
+}
+
+.payment-method h3 {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.payment-method label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 52px;
+  margin-bottom: 10px;
+  padding: 0 15px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface);
+  color: var(--text);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.payment-method label:last-child {
+  margin-bottom: 0;
+}
+
+.payment-method label:hover {
+  border-color: var(--accent);
+  background: var(--surface-soft);
+}
+
+.payment-method input[type="radio"] {
+  width: 17px;
+  height: 17px;
+
+  margin: 0;
+
+  flex-shrink: 0;
+
+  accent-color: var(--primary);
+
+  cursor: pointer;
+}
+
+.payment-method label:has(
+  input[type="radio"]:checked
+) {
+  border-color: var(--accent);
+  background: var(--surface-soft);
+  box-shadow:
+    0 0 0 2px rgba(200, 149, 62, 0.08);
+}
+
+.payment-method label:has(
+  input[type="radio"]:checked
+) input[type="radio"] {
+  accent-color: var(--primary);
+}
+
 @keyframes button-spin {
   to {
     transform: rotate(360deg);

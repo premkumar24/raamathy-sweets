@@ -1,26 +1,43 @@
-import { Component, signal , OnInit } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product';
 import { ToastService } from '../../services/toast';
-import {FormControl,FormGroup,ReactiveFormsModule,Validators} from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import { CartService } from '../../services/cart';
-import {CreateOrderRequest,OrderService} from '../../services/order';
+import {
+  CreateOrderRequest,
+  OrderService
+} from '../../services/order';
 import { AuthService } from '../../services/auth';
-import {BuyNowItem,BuyNowService} from '../../services/buy-now';
-import {CartCheckoutService} from '../../services/cart-checkout';
+import {
+  BuyNowItem,
+  BuyNowService
+} from '../../services/buy-now';
+import {
+  CartCheckoutService
+} from '../../services/cart-checkout';
+import { PaymentService } from '../../services/payment';
+import { load } from '@cashfreepayments/cashfree-js';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-order',
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    FormsModule
   ],
   templateUrl: './order.html',
   styleUrl: './order.css'
 })
-export class Order implements OnInit{
+export class Order implements OnInit {
 
   isSubmitting = signal(false);
 
@@ -31,9 +48,16 @@ export class Order implements OnInit{
   orderNumber = signal('');
   orderId = signal('');
 
-  buyNowItem = signal<BuyNowItem | null>(null);
+  buyNowItem =
+    signal<BuyNowItem | null>(null);
 
-checkoutItems = signal<BuyNowItem[]>([]);
+  checkoutItems =
+    signal<BuyNowItem[]>([]);
+
+  cashfree: any;
+
+  paymentMethod:
+    'online' | 'offline' = 'online';
 
   orderForm = new FormGroup({
 
@@ -64,469 +88,499 @@ checkoutItems = signal<BuyNowItem[]>([]);
   });
 
   constructor(
-  public cartService: CartService,
-  private orderService: OrderService,
-  private productService: ProductService,
-  private toastService: ToastService,
-  private authService: AuthService,
-  private buyNowService: BuyNowService,
-  private cartCheckoutService: CartCheckoutService
-) {}
+    public cartService: CartService,
+    private orderService: OrderService,
+    private productService: ProductService,
+    private toastService: ToastService,
+    private authService: AuthService,
+    private buyNowService: BuyNowService,
+    private cartCheckoutService: CartCheckoutService,
+    private paymentService: PaymentService
+  ) {}
 
-ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
 
-  const user =
-    this.authService.currentUser();
-
-  if (user) {
-
-    this.orderForm.patchValue({
-      name: user.name || '',
-      phone: user.phone || '',
-      address: user.address || ''
+    this.cashfree = await load({
+      mode: 'sandbox'
     });
 
+    const user =
+      this.authService.currentUser();
+
+    if (user) {
+
+      this.orderForm.patchValue({
+        name: user.name || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
+
+    }
+
+    const buyNowItem =
+      this.buyNowService.item();
+
+    const cartCheckoutItems =
+      this.cartCheckoutService.items();
+
+    /*
+     * BUY NOW
+     *
+     * Buy Now should always take priority.
+     * This prevents old cart-checkout data
+     * from overriding the new Buy Now product.
+     */
+    if (buyNowItem) {
+
+      this.buyNowItem.set(
+        buyNowItem
+      );
+
+      this.checkoutItems.set([
+        buyNowItem
+      ]);
+
+    }
+
+    /*
+     * SELECTED CART ITEMS
+     */
+    else if (
+      cartCheckoutItems.length > 0
+    ) {
+
+      this.checkoutItems.set(
+        cartCheckoutItems
+      );
+
+      this.buyNowItem.set(null);
+
+    }
+
+    /*
+     * NORMAL CART
+     */
+    else {
+
+      this.checkoutItems.set(
+        this.cartService.items()
+      );
+
+      this.buyNowItem.set(null);
+
+    }
+
   }
 
-  const cartCheckoutItems =
-    this.cartCheckoutService.items();
+  placeOrder(): void {
 
-  const buyNowItem =
-    this.buyNowService.item();
+    if (this.orderSuccess()) {
+      return;
+    }
 
-  if (cartCheckoutItems.length > 0) {
+    if (this.orderForm.invalid) {
 
-    this.checkoutItems.set(
-      cartCheckoutItems
-    );
+      this.orderForm.markAllAsTouched();
 
-    this.buyNowItem.set(null);
+      return;
+    }
 
-  } else if (buyNowItem) {
+    const buyNowItem =
+      this.buyNowItem();
 
-    this.buyNowItem.set(
+    const checkoutItems =
       buyNowItem
-    );
+        ? [buyNowItem]
+        : this.checkoutItems();
 
-    this.checkoutItems.set([
-      buyNowItem
-    ]);
+    if (checkoutItems.length === 0) {
 
-  } else {
+      this.errorMessage.set(
+        'Your cart is empty.'
+      );
 
-    this.checkoutItems.set(
-      this.cartService.items()
-    );
+      return;
+    }
 
-  }
+    this.errorMessage.set('');
+    this.isSubmitting.set(true);
 
-}
+    /*
+     * Get latest product information
+     */
+    this.productService
+      .getProducts()
+      .subscribe({
 
-placeOrder(): void {
+        next: (response) => {
 
-  if (this.orderSuccess()) {
-    return;
-  }
+          let latestCheckoutItems:
+            BuyNowItem[] = [];
 
-  if (this.orderForm.invalid) {
+          /*
+           * BUY NOW
+           */
+          if (buyNowItem) {
 
-    this.orderForm.markAllAsTouched();
-
-    return;
-  }
-
-  const buyNowItem =
-    this.buyNowItem();
-
-  const checkoutItems =
-    buyNowItem
-      ? [buyNowItem]
-      : this.checkoutItems();
-
-  if (checkoutItems.length === 0) {
-
-    this.errorMessage.set(
-      'Your cart is empty.'
-    );
-
-    return;
-  }
-
-  this.errorMessage.set('');
-  this.isSubmitting.set(true);
-
-  // Get the latest product information
-  this.productService
-    .getProducts()
-    .subscribe({
-
-      next: (response) => {
-
-        let latestCheckoutItems:
-          BuyNowItem[] = [];
-
-        /*
-         * BUY NOW
-         */
-        if (buyNowItem) {
-
-          const latestProduct =
-            response.products.find(
-              product =>
-                product._id ===
-                buyNowItem.product._id
-            );
-
-          if (
-            !latestProduct ||
-            !latestProduct.isAvailable ||
-            latestProduct.stock <= 0
-          ) {
-
-            this.isSubmitting.set(false);
-
-            this.errorMessage.set(
-              'This product is no longer available.'
-            );
-
-            return;
-          }
-
-          if (
-            buyNowItem.quantity >
-            latestProduct.stock
-          ) {
-
-            this.isSubmitting.set(false);
-
-            this.errorMessage.set(
-              'The available stock is less than your selected quantity.'
-            );
-
-            return;
-          }
-
-          latestCheckoutItems = [
-            {
-              product: latestProduct,
-              quantity: buyNowItem.quantity
-            }
-          ];
-
-        }
-
-        /*
-         * SELECTED CART ITEMS
-         */
-        else {
-
-          this.cartService.syncProducts(
-            response.products
-          );
-
-          const selectedCheckoutItems =
-            this.checkoutItems();
-
-          latestCheckoutItems =
-            selectedCheckoutItems
-              .map(item => {
-
-                const latestProduct =
-                  response.products.find(
-                    product =>
-                      product._id ===
-                      item.product._id
-                  );
-
-                if (
-                  !latestProduct ||
-                  !latestProduct.isAvailable ||
-                  latestProduct.stock <= 0
-                ) {
-                  return null;
-                }
-
-                if (
-                  item.quantity >
-                  latestProduct.stock
-                ) {
-                  return null;
-                }
-
-                return {
-                  product: latestProduct,
-                  quantity: item.quantity
-                };
-
-              })
-              .filter(
-                (
-                  item
-                ): item is BuyNowItem =>
-                  item !== null
+            const latestProduct =
+              response.products.find(
+                product =>
+                  product._id ===
+                  buyNowItem.product._id
               );
 
-          if (
-            latestCheckoutItems.length === 0
-          ) {
-
-            this.isSubmitting.set(false);
-
-            this.errorMessage.set(
-              'Some selected products are no longer available.'
-            );
-
-            return;
-          }
-
-        }
-
-        /*
-         * CREATE ORDER REQUEST
-         */
-        const orderRequest:
-          CreateOrderRequest = {
-
-          customerName:
-            this.orderForm.controls.name.value.trim(),
-
-          phone:
-            this.orderForm.controls.phone.value.trim(),
-
-          address:
-            this.orderForm.controls.address.value.trim(),
-
-          items:
-            latestCheckoutItems.map(item => ({
-
-              productId:
-                item.product._id,
-
-              quantity:
-                item.quantity
-
-            }))
-
-        };
-
-        /*
-         * CREATE ORDER
-         */
-        this.orderService
-          .createOrder(orderRequest)
-          .subscribe({
-
-            next: (response) => {
-
-              this.orderId.set(
-                response.order._id
-              );
-
-              this.orderNumber.set(
-                response.order.orderNumber
-              );
-
-              this.orderSuccess.set(true);
-
-              this.isSubmitting.set(false);
-
-              /*
-               * CLEANUP AFTER SUCCESSFUL ORDER
-               */
-
-              if (buyNowItem) {
-
-                this.buyNowService.clear();
-
-              }
-
-              else if (
-                this.cartCheckoutService
-                  .items()
-                  .length > 0
-              ) {
-
-                const orderedItems =
-                  this.cartCheckoutService.items();
-
-                orderedItems.forEach(item => {
-
-                  this.cartService
-                    .removeFromCart(
-                      item.product._id
-                    );
-
-                });
-
-                this.cartCheckoutService.clear();
-
-              }
-
-              else {
-
-                this.cartService.clearCart();
-
-              }
-
-              /*
-               * UPDATE USER PROFILE
-               */
-
-              const phone =
-                this.orderForm
-                  .controls
-                  .phone
-                  .value
-                  .trim();
-
-              const address =
-                this.orderForm
-                  .controls
-                  .address
-                  .value
-                  .trim();
-
-              this.authService
-                .updateProfile(
-                  phone,
-                  address
-                )
-                .subscribe({
-
-                  next: (
-                    profileResponse
-                  ) => {
-
-                    // Keep local user data updated
-                    const currentUser =
-                      this.authService
-                        .currentUser();
-
-                    if (currentUser) {
-
-                      this.authService.setUser(
-                        profileResponse.user,
-                        this.authService
-                          .getToken() || ''
-                      );
-
-                    }
-
-                  },
-
-                  error: (error) => {
-
-                    // Profile update failure
-                    // should NOT affect
-                    // the already successful order.
-                    console.error(
-                      'PROFILE UPDATE ERROR:',
-                      error
-                    );
-
-                  }
-
-                });
-
-              /*
-               * DOWNLOAD INVOICE
-               */
-
-              setTimeout(() => {
-
-                this.downloadInvoice();
-
-              }, 1500);
-
-            },
-
-            error: (error) => {
-
-              this.toastService.show(
-                'Failed to Place the Order, Try Sometime Later'
-              );
-
-              console.error(
-                'ORDER ERROR:',
-                error
-              );
+            if (
+              !latestProduct ||
+              !latestProduct.isAvailable ||
+              latestProduct.stock <= 0
+            ) {
 
               this.isSubmitting.set(false);
 
               this.errorMessage.set(
-                error?.error?.message ||
-                'Unable to place the order. Please try again.'
+                'This product is no longer available.'
               );
 
+              return;
             }
 
-          });
+            if (
+              buyNowItem.quantity >
+              latestProduct.stock
+            ) {
 
-      },
+              this.isSubmitting.set(false);
 
-      error: (error) => {
+              this.errorMessage.set(
+                'The available stock is less than your selected quantity.'
+              );
 
-        console.error(
-          'PRODUCT REFRESH ERROR:',
-          error
-        );
+              return;
+            }
 
-        this.isSubmitting.set(false);
+            latestCheckoutItems = [
+              {
+                product: latestProduct,
+                quantity: buyNowItem.quantity
+              }
+            ];
 
-        this.errorMessage.set(
-          'Unable to verify product availability. Please try again.'
-        );
+          }
 
-      }
+          /*
+           * SELECTED CART ITEMS
+           */
+          else {
 
-    });
+            this.cartService.syncProducts(
+              response.products
+            );
 
-}
+            const selectedCheckoutItems =
+              this.checkoutItems();
 
-downloadInvoice(): void {
+            latestCheckoutItems =
+              selectedCheckoutItems
+                .map(item => {
 
-  const orderId = this.orderId();
+                  const latestProduct =
+                    response.products.find(
+                      product =>
+                        product._id ===
+                        item.product._id
+                    );
 
-  if (!orderId) {
+                  if (
+                    !latestProduct ||
+                    !latestProduct.isAvailable ||
+                    latestProduct.stock <= 0
+                  ) {
+                    return null;
+                  }
+
+                  if (
+                    item.quantity >
+                    latestProduct.stock
+                  ) {
+                    return null;
+                  }
+
+                  return {
+                    product: latestProduct,
+                    quantity: item.quantity
+                  };
+
+                })
+                .filter(
+                  (
+                    item
+                  ): item is BuyNowItem =>
+                    item !== null
+                );
+
+            if (
+              latestCheckoutItems.length === 0
+            ) {
+
+              this.isSubmitting.set(false);
+
+              this.errorMessage.set(
+                'Some selected products are no longer available.'
+              );
+
+              return;
+            }
+
+          }
+
+          /*
+           * CREATE ORDER REQUEST
+           */
+          const orderRequest:
+            CreateOrderRequest = {
+
+            customerName:
+              this.orderForm.controls.name.value.trim(),
+
+            phone:
+              this.orderForm.controls.phone.value.trim(),
+
+            address:
+              this.orderForm.controls.address.value.trim(),
+
+            paymentMethod:
+              this.paymentMethod,
+
+            items:
+              latestCheckoutItems.map(item => ({
+
+                productId:
+                  item.product._id,
+
+                quantity:
+                  item.quantity
+
+              }))
+
+          };
+
+          /*
+           * CREATE ORDER
+           */
+          this.orderService
+            .createOrder(orderRequest)
+            .subscribe({
+
+              next: (response) => {
+
+                this.orderId.set(
+                  response.order._id
+                );
+
+                this.orderNumber.set(
+                  response.order.orderNumber
+                );
+
+                /*
+                 * ONLINE PAYMENT
+                 */
+                if (
+                  this.paymentMethod === 'online'
+                ) {
+
+                  this.startPayment(
+                    response.order
+                  );
+
+                  return;
+                }
+
+                /*
+                 * OFFLINE PAYMENT
+                 */
+
+                // Clear temporary Buy Now data.
+                this.buyNowService.clear();
+
+                /*
+                 * Clear cart and cart-checkout
+                 * data only for normal cart checkout.
+                 */
+                if (!buyNowItem) {
+
+                  this.cartService.clearCart();
+
+                  this.cartCheckoutService.clear();
+
+                }
+
+                this.isSubmitting.set(false);
+
+                this.orderSuccess.set(true);
+
+                setTimeout(() => {
+
+                  this.downloadInvoice();
+
+                }, 100);
+
+              },
+
+              error: (error) => {
+
+                this.toastService.show(
+                  'Failed to Place the Order, Try Sometime Later'
+                );
+
+                console.error(
+                  'ORDER ERROR:',
+                  error
+                );
+
+                this.isSubmitting.set(false);
+
+                this.errorMessage.set(
+                  error?.error?.message ||
+                  'Unable to place the order. Please try again.'
+                );
+
+              }
+
+            });
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'PRODUCT REFRESH ERROR:',
+            error
+          );
+
+          this.isSubmitting.set(false);
+
+          this.errorMessage.set(
+            'Unable to verify product availability. Please try again.'
+          );
+
+        }
+
+      });
+
+  }
+
+  async startPayment(order: any): Promise<void> {
+
+  if (!this.cashfree) {
+    this.errorMessage.set(
+      'Payment system is not ready. Please try again.'
+    );
+
+    this.isSubmitting.set(false);
     return;
   }
 
-  this.orderService
-    .downloadInvoice(orderId)
-    .subscribe({
+  try {
 
-      next: (blob) => {
+    /*
+     * Create Cashfree payment order.
+     * Backend fetches amount and customer details
+     * from the existing order in MongoDB.
+     */
+    const response = await this.paymentService
+      .createPayment(order.orderNumber)
+      .toPromise();
 
-        const url =
-          window.URL.createObjectURL(blob);
+    if (
+      !response?.success ||
+      !response?.paymentSessionId
+    ) {
+      throw new Error(
+        'Payment session could not be created.'
+      );
+    }
 
-        const link =
-          document.createElement('a');
+    /*
+     * Remember whether this was
+     * Buy Now or Cart checkout.
+     */
+    sessionStorage.setItem(
+      'isBuyNowCheckout',
+      this.buyNowItem() ? 'true' : 'false'
+    );
 
-        link.href = url;
-
-        link.download =
-          `${this.orderNumber()}.pdf`;
-
-        link.click();
-
-        window.URL.revokeObjectURL(url);
-      },
-
-      error: (error) => {
-
-        console.error(
-          'INVOICE DOWNLOAD ERROR:',
-          error
-        );
-
-        this.errorMessage.set(
-          'Unable to download the invoice. Please try again.'
-        );
-
-      }
-
+    /*
+     * Open Cashfree checkout.
+     */
+    await this.cashfree.checkout({
+      paymentSessionId: response.paymentSessionId,
+      redirectTarget: '_self'
     });
+
+  } catch (error) {
+
+    console.error(
+      'PAYMENT ERROR:',
+      error
+    );
+
+    this.isSubmitting.set(false);
+
+    this.errorMessage.set(
+      'Unable to start payment. Please try again.'
+    );
+
+  }
+
 }
+
+  downloadInvoice(): void {
+
+    const orderId =
+      this.orderId();
+
+    if (!orderId) {
+      return;
+    }
+
+    this.orderService
+      .downloadInvoice(orderId)
+      .subscribe({
+
+        next: (blob) => {
+
+          const url =
+            window.URL.createObjectURL(blob);
+
+          const link =
+            document.createElement('a');
+
+          link.href = url;
+
+          link.download =
+            `${this.orderNumber()}.pdf`;
+
+          link.click();
+
+          window.URL.revokeObjectURL(url);
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'INVOICE DOWNLOAD ERROR:',
+            error
+          );
+
+          this.errorMessage.set(
+            'Unable to download the invoice. Please try again.'
+          );
+
+        }
+
+      });
+
+  }
 
 }

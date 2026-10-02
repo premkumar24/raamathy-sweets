@@ -79,6 +79,15 @@ deliveryDrafts: {
 
   });
 
+  paymentConfirmationStep = signal<1 | 2 | null>(null);
+
+pendingStatusUpdate = signal<{
+  orderId: string;
+  status: string;
+} | null>(null);
+
+paymentConfirmationOrder = signal<Order | null>(null);
+
   constructor(
     private ordersService: OrdersService,
      private route: ActivatedRoute,
@@ -254,53 +263,152 @@ onStatusChange(event: Event): void {
   // Order status update
   // --------------------------------------------------
 
-  updateStatus(
-    orderId: string,
-    status: string
-  ): void {
 
-    this.updatingOrderId.set(orderId);
+updateStatus(
+  orderId: string,
+  status: string
+): void {
 
-    this.ordersService
-      .updateOrderStatus(
-        orderId,
-        status
-      )
-      .subscribe({
+  const order = this.orders().find(
+    order => order._id === orderId
+  );
 
-        next: (response) => {
+  /*
+   * Show custom payment confirmation
+   * only when moving:
+   *
+   * PROCESSING
+   *      ↓
+   * READY_FOR_DELIVERY
+   *
+   * and payment is still pending.
+   */
+  if (
+    order &&
+    order.status === 'PROCESSING' &&
+    status === 'READY_FOR_DELIVERY' &&
+    order.payment?.status === 'PENDING'
+  ) {
 
-          this.orders.update(
-            orders =>
-              orders.map(order =>
-                order._id === orderId
-                  ? response.order
-                  : order
-              )
-          );
+    this.pendingStatusUpdate.set({
+      orderId,
+      status
+    });
 
-          this.updatingOrderId.set(null);
+    this.paymentConfirmationOrder.set(order);
 
-        },
+    this.paymentConfirmationStep.set(1);
 
-        error: (error) => {
-
-          console.error(
-            'UPDATE STATUS ERROR:',
-            error
-          );
-
-          this.errorMessage.set(
-            'Unable to update order status.'
-          );
-
-          this.updatingOrderId.set(null);
-
-        }
-
-      });
-
+    return;
   }
+
+  /*
+   * Normal status update
+   */
+  this.performStatusUpdate(
+    orderId,
+    status
+  );
+}
+
+performStatusUpdate(
+  orderId: string,
+  status: string
+): void {
+
+  this.updatingOrderId.set(orderId);
+
+  this.ordersService
+    .updateOrderStatus(
+      orderId,
+      status
+    )
+    .subscribe({
+
+      next: (response) => {
+
+        this.orders.update(
+          orders =>
+            orders.map(order =>
+              order._id === orderId
+                ? response.order
+                : order
+            )
+        );
+
+        this.updatingOrderId.set(null);
+
+      },
+
+      error: (error) => {
+
+        console.error(
+          'UPDATE STATUS ERROR:',
+          error
+        );
+
+        this.errorMessage.set(
+          'Unable to update order status.'
+        );
+
+        this.updatingOrderId.set(null);
+
+      }
+
+    });
+}
+
+
+continuePaymentConfirmation(): void {
+
+  this.paymentConfirmationStep.set(2);
+
+}
+
+confirmOfflinePayment(): void {
+
+  const pendingUpdate =
+    this.pendingStatusUpdate();
+
+  if (!pendingUpdate) {
+    return;
+  }
+
+  this.closePaymentConfirmation();
+
+  this.performStatusUpdate(
+    pendingUpdate.orderId,
+    pendingUpdate.status
+  );
+
+}
+closePaymentConfirmation(): void {
+
+  const pendingUpdate = this.pendingStatusUpdate();
+
+  /*
+   * If the admin cancelled the payment confirmation,
+   * restore the dropdown to PROCESSING.
+   */
+  if (pendingUpdate) {
+
+    this.orders.update(
+      orders =>
+        orders.map(order =>
+          order._id === pendingUpdate.orderId
+            ? {
+                ...order,
+                status: 'PROCESSING'
+              }
+            : order
+        )
+    );
+  }
+
+  this.paymentConfirmationStep.set(null);
+  this.pendingStatusUpdate.set(null);
+  this.paymentConfirmationOrder.set(null);
+}
 
   updateDelivery(
   orderId: string

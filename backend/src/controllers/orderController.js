@@ -1,16 +1,16 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
-const { notifyNewOrder } = require("../services/orderNotificationService");
 const mongoose = require("mongoose");
 const { generateInvoice } = require("../services/invoiceService");
-
+const { notifyNewOrder } = require("../services/orderNotificationService");
 const createOrder = async (req, res) => {
     try {
         const {
             customerName,
             phone,
             address,
-            items
+            items,
+            paymentMethod
         } = req.body;
 
         if (
@@ -24,6 +24,15 @@ const createOrder = async (req, res) => {
                 success: false,
                 message:
                     "Customer name, phone, address and items are required"
+            });
+        }
+
+        if (
+            !["online", "offline"].includes(paymentMethod)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid payment method"
             });
         }
 
@@ -96,28 +105,44 @@ const createOrder = async (req, res) => {
             totalAmount,
             customerName,
             phone,
-            address
+            address,
+            payment: {
+                method: paymentMethod,
+                gateway:
+                    paymentMethod === "online"
+                        ? "cashfree"
+                        : "",
+                status: "PENDING"
+            }
         });
 
-        try {
-            await notifyNewOrder(order);
-        } catch (notificationError) {
-            console.error(
-                "Order notification failed:",
-                notificationError
-            );
+        if (paymentMethod === "offline") {
+
+            try {
+
+                await notifyNewOrder(order);
+
+                order.payment.paymentNotificationSent =
+                    true;
+
+                await order.save();
+
+                console.log(
+                    "✅ Offline order notification sent:",
+                    order.orderNumber
+                );
+
+            } catch (notificationError) {
+
+                console.error(
+                    "❌ Offline order notification failed:",
+                    notificationError
+                );
+
+            }
+
         }
 
-        for (const item of orderItems) {
-            await Product.findByIdAndUpdate(
-                item.productId,
-                {
-                    $inc: {
-                        stock: -item.quantity
-                    }
-                }
-            );
-        }
 
         return res.status(201).json({
             success: true,

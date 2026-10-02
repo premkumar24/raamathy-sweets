@@ -314,32 +314,69 @@
               Order Status
             </span>
 
-            <span class="status-badge" [ngClass]="{
-            'status-awaiting':
-              order.status === 'AWAITING_CONFIRMATION',
+            <div class="order-badges">
 
-            'status-confirmed':
-              order.status === 'CONFIRMED',
+              <!-- Order Status -->
+              <span class="status-badge" [ngClass]="{
+      'status-awaiting':
+        order.status === 'AWAITING_CONFIRMATION',
 
-            'status-processing':
-              order.status === 'PROCESSING',
+      'status-confirmed':
+        order.status === 'CONFIRMED',
 
-            'status-ready':
-              order.status === 'READY_FOR_DELIVERY',
+      'status-processing':
+        order.status === 'PROCESSING',
 
-            'status-delivered':
-              order.status === 'DELIVERED',
+      'status-ready':
+        order.status === 'READY_FOR_DELIVERY',
 
-            'status-cancelled':
-              order.status === 'CANCELLED'
-          }">
-              {{ getStatusLabel(order.status) }}
-            </span>
+      'status-delivered':
+        order.status === 'DELIVERED',
+
+      'status-cancelled':
+        order.status === 'CANCELLED'
+    }">
+                {{ getStatusLabel(order.status) }}
+              </span>
+
+              <!-- Payment Status -->
+              <span class="payment-badge" [ngClass]="{
+      'payment-paid':
+        order.payment?.status === 'SUCCESS',
+
+      'payment-pending':
+        order.payment?.status === 'PENDING',
+
+      'payment-failed':
+        order.payment?.status === 'FAILED'
+    }">
+
+                <span class="payment-badge-icon">
+                  {{
+                  order.payment?.status === 'SUCCESS'
+                  ? '✓'
+                  : order.payment?.status === 'FAILED'
+                  ? '✕'
+                  : '◷'
+                  }}
+                </span>
+
+                {{
+                order.payment?.status === 'SUCCESS'
+                ? 'Paid'
+                : order.payment?.status === 'FAILED'
+                ? 'Payment Failed'
+                : 'Payment Pending'
+                }}
+
+              </span>
+
+            </div>
 
           </div>
 
 
-          <div class="status-control"  *ngIf="
+          <div class="status-control" *ngIf="
     order.status !== 'DELIVERED' &&
     order.status !== 'CANCELLED'
   ">
@@ -576,6 +613,107 @@
 
     </div>
 
+
+  </div>
+
+  <!-- Payment Confirmation Modal -->
+
+  <div class="payment-confirmation-overlay" *ngIf="paymentConfirmationStep() !== null">
+
+    <div class="payment-confirmation-modal">
+
+      <!-- Step 1 -->
+
+      <ng-container *ngIf="paymentConfirmationStep() === 1">
+
+        <div class="payment-confirmation-icon">
+          ⚠
+        </div>
+
+        <h3>
+          Payment Still Pending
+        </h3>
+
+        <p class="payment-confirmation-message">
+
+          Payment for order
+
+          <strong>
+            {{ paymentConfirmationOrder()?.orderNumber }}
+          </strong>
+
+          is still pending from the customer.
+
+        </p>
+
+        <p class="payment-confirmation-subtext">
+
+          Please confirm the payment status before
+          marking this order as Ready for Delivery.
+
+        </p>
+
+        <div class="payment-confirmation-actions">
+
+          <button type="button" class="payment-cancel-button" (click)="closePaymentConfirmation()">
+            Cancel
+          </button>
+
+          <button type="button" class="payment-continue-button" (click)="continuePaymentConfirmation()">
+            Continue
+          </button>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- Step 2 -->
+
+      <ng-container *ngIf="paymentConfirmationStep() === 2">
+
+        <div class="payment-confirmation-icon">
+          ₹
+        </div>
+
+        <h3>
+          Offline Payment Confirmation
+        </h3>
+
+        <p class="payment-confirmation-message">
+
+          Has
+
+          <strong>
+            {{ paymentConfirmationOrder()?.customerName }}
+          </strong>
+
+          made the payment offline?
+
+        </p>
+
+        <p class="payment-confirmation-subtext">
+
+          Confirm only if you have received the payment
+          from the customer.
+
+        </p>
+
+        <div class="payment-confirmation-actions">
+
+          <button type="button" class="payment-cancel-button" (click)="closePaymentConfirmation()">
+            No, Keep Processing
+          </button>
+
+          <button type="button" class="payment-continue-button" (click)="confirmOfflinePayment()">
+            Yes, Continue
+          </button>
+
+        </div>
+
+      </ng-container>
+
+    </div>
 
   </div>
 

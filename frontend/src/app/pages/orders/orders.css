@@ -869,6 +869,177 @@
     line-height: 1.5;
 }
 
+/* Order and Payment Badges */
+
+.order-badges {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Common Payment Badge */
+
+.payment-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    padding: 7px 12px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.payment-badge-icon {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* Paid */
+
+.payment-paid {
+    background: #e6f5eb;
+    color: #217a45;
+    border: 1px solid #b9e4c8;
+}
+
+/* Payment Pending */
+
+.payment-pending {
+    background: #fff4d6;
+    color: #9a6700;
+    border: 1px solid #f3d98b;
+}
+
+/* Payment Failed */
+
+
+.payment-failed {
+    background: #fde8e8;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+}
+
+/* Pay Now Button */
+
+.pay-now-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 30px;
+    padding: 0 13px;
+
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+
+    background: var(--primary);
+    color: #ffffff;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    line-height: 1;
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease,
+        opacity 0.2s ease;
+}
+
+.pay-now-button:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.pay-now-button:active {
+    transform: translateY(1px);
+}
+
+.pay-now-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pay-now-button {
+    min-width: 105px;
+    min-height: 38px;
+
+    padding: 0 15px;
+
+    border: 1px solid #16a34a;
+    border-radius: 7px;
+
+    background: #16a34a;
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 0.1px;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    box-shadow:
+        0 2px 5px rgba(22, 163, 74, 0.18);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.1s ease;
+}
+
+.pay-now-button:hover {
+    background: #15803d;
+    border-color: #15803d;
+
+    box-shadow:
+        0 4px 9px rgba(22, 163, 74, 0.25);
+}
+
+.pay-now-button:active {
+    transform: translateY(1px);
+
+    box-shadow:
+        0 2px 4px rgba(22, 163, 74, 0.18);
+}
+
+.pay-now-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+
+    box-shadow: none;
+}
+
+@media (max-width: 480px) {
+
+    .order-badges {
+        justify-content: flex-start;
+        margin-top: 12px;
+    }
+
+    .payment-badge {
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+
+}
+
 @media (max-width: 550px) {
 
     .offline-delivery {

@@ -9,6 +9,7 @@ const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const { sendWhatsAppText } = require("./services/whatsapp");
 
@@ -41,7 +42,13 @@ app.use(cors({
 
 
 
-app.use(express.json());
+app.use(
+    express.json({
+        verify: (req, res, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 
 // -------------------------
 // Routes
@@ -51,6 +58,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/uploads",uploadRoutes);
+app.use("/api/payments",paymentRoutes);
 
 app.get("/", (req, res) => {
     res.json({

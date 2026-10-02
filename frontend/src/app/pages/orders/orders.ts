@@ -17,6 +17,14 @@ import {
   Order
 } from '../../services/orders';
 
+import {
+  PaymentService
+} from '../../services/payment';
+
+import {
+  load
+} from '@cashfreepayments/cashfree-js';
+
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -35,17 +43,41 @@ export class Orders implements OnInit {
 
   errorMessage = signal('');
 
+  /*
+   * Stores the order number currently
+   * being processed for payment.
+   */
+  payingOrderId = signal<string | null>(null);
+
+  /*
+   * Cashfree instance
+   */
+  cashfree: any;
+
   constructor(
-    private ordersService: OrdersService
+    private ordersService: OrdersService,
+    private paymentService: PaymentService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+
+    /*
+     * Load Cashfree
+     */
+    this.cashfree = await load({
+      mode: 'sandbox'
+    });
+
+    /*
+     * Load customer orders
+     */
     this.loadOrders();
   }
 
   loadOrders(): void {
 
     this.loading.set(true);
+
     this.errorMessage.set('');
 
     this.ordersService
@@ -78,6 +110,144 @@ export class Orders implements OnInit {
       });
   }
 
+  /*
+   * PAY NOW
+   *
+   * Creates a Cashfree payment session
+   * for the existing order.
+   *
+   * It does NOT create a new application order.
+   */
+  async payNow(order: Order): Promise<void> {
+
+    /*
+     * Only online pending payments
+     * can be paid from here.
+     */
+  if (
+    order.payment?.status !== 'PENDING'
+) {
+    return;
+}
+
+    /*
+     * Do not allow payment for cancelled orders.
+     */
+    if (
+      order.status === 'CANCELLED'
+    ) {
+      return;
+    }
+
+    /*
+     * Prevent double-clicking.
+     */
+    if (
+      this.payingOrderId()
+    ) {
+      return;
+    }
+
+    /*
+     * Make sure Cashfree is ready.
+     */
+    if (!this.cashfree) {
+
+      this.errorMessage.set(
+        'Payment system is not ready. Please try again.'
+      );
+
+      return;
+    }
+
+    this.errorMessage.set('');
+
+    this.payingOrderId.set(
+      order.orderNumber
+    );
+
+    try {
+
+      /*
+       * Create Cashfree payment session
+       * for the existing order.
+       *
+       * Backend gets the amount,
+       * customer details and payment
+       * information from MongoDB.
+       */
+      const response =
+        await this.paymentService
+          .createPayment(
+            order.orderNumber
+          )
+          .toPromise();
+
+      if (
+        !response?.success ||
+        !response?.paymentSessionId
+      ) {
+
+        throw new Error(
+          'Payment session could not be created.'
+        );
+      }
+
+      /*
+       * Tell payment-success page that
+       * this is a payment retry from
+       * the Orders page.
+       *
+       * This is important because the
+       * customer may currently have
+       * other items in their cart.
+       */
+      sessionStorage.setItem(
+  'isOrderRetryPayment',
+  'true'
+);
+
+sessionStorage.setItem(
+  'retryPaymentOrderNumber',
+  order.orderNumber
+);
+
+      /*
+       * Open Cashfree checkout.
+       */
+      await this.cashfree.checkout({
+
+        paymentSessionId:
+          response.paymentSessionId,
+
+        redirectTarget:
+          '_self'
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        'PAY NOW ERROR:',
+        error
+      );
+
+      /*
+       * Remove retry flag if Cashfree
+       * checkout could not be started.
+       */
+      sessionStorage.removeItem(
+        'isOrderRetryPayment'
+      );
+
+      this.errorMessage.set(
+        'Unable to start payment. Please try again.'
+      );
+
+      this.payingOrderId.set(null);
+    }
+  }
+
   getStatusLabel(
     status: string
   ): string {
@@ -91,66 +261,63 @@ export class Orders implements OnInit {
   }
 
   getShipmentStatusLabel(
-  status:
-    | 'not_shipped'
-    | 'in_transit'
-    | 'out_for_delivery'
-    | 'delivered'
-    | undefined
-): string {
+    status:
+      | 'not_shipped'
+      | 'in_transit'
+      | 'out_for_delivery'
+      | 'delivered'
+      | undefined
+  ): string {
 
-  switch (status) {
+    switch (status) {
 
-    case 'not_shipped':
-      return 'Not Shipped';
+      case 'not_shipped':
+        return 'Not Shipped';
 
-    case 'in_transit':
-      return 'In Transit';
+      case 'in_transit':
+        return 'In Transit';
 
-    case 'out_for_delivery':
-      return 'Out for Delivery';
+      case 'out_for_delivery':
+        return 'Out for Delivery';
 
-    case 'delivered':
-      return 'Delivered';
+      case 'delivered':
+        return 'Delivered';
 
-    default:
-      return 'Not Shipped';
-
+      default:
+        return 'Not Shipped';
+    }
   }
 
-}
+  isShipmentStepCompleted(
+    currentStatus:
+      | 'not_shipped'
+      | 'in_transit'
+      | 'out_for_delivery'
+      | 'delivered'
+      | undefined,
 
-isShipmentStepCompleted(
-  currentStatus:
-    | 'not_shipped'
-    | 'in_transit'
-    | 'out_for_delivery'
-    | 'delivered'
-    | undefined,
+    step:
+      | 'not_shipped'
+      | 'in_transit'
+      | 'out_for_delivery'
+      | 'delivered'
+  ): boolean {
 
-  step:
-    | 'not_shipped'
-    | 'in_transit'
-    | 'out_for_delivery'
-    | 'delivered'
-): boolean {
+    const order = [
+      'not_shipped',
+      'in_transit',
+      'out_for_delivery',
+      'delivered'
+    ];
 
-  const order = [
-    'not_shipped',
-    'in_transit',
-    'out_for_delivery',
-    'delivered'
-  ];
+    const currentIndex =
+      order.indexOf(
+        currentStatus || 'not_shipped'
+      );
 
-  const currentIndex =
-    order.indexOf(
-      currentStatus || 'not_shipped'
-    );
+    const stepIndex =
+      order.indexOf(step);
 
-  const stepIndex =
-    order.indexOf(step);
-
-  return stepIndex <= currentIndex;
-
-}
+    return stepIndex <= currentIndex;
+  }
 }

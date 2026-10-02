@@ -123,27 +123,67 @@
                     </div>
 
 
-                    <div class="status-badge" [ngClass]="{
-              'status-awaiting':
-                order.status === 'AWAITING_CONFIRMATION',
+                   <div class="order-badges">
 
-              'status-confirmed':
-                order.status === 'CONFIRMED',
+    <!-- Order Status -->
+    <div class="status-badge" [ngClass]="{
+        'status-awaiting':
+          order.status === 'AWAITING_CONFIRMATION',
 
-              'status-processing':
-                order.status === 'PROCESSING',
+        'status-confirmed':
+          order.status === 'CONFIRMED',
 
-              'status-ready':
-                order.status === 'READY_FOR_DELIVERY',
+        'status-processing':
+          order.status === 'PROCESSING',
 
-              'status-delivered':
-                order.status === 'DELIVERED',
+        'status-ready':
+          order.status === 'READY_FOR_DELIVERY',
 
-              'status-cancelled':
-                order.status === 'CANCELLED'
-            }">
-                        {{ getStatusLabel(order.status) }}
-                    </div>
+        'status-delivered':
+          order.status === 'DELIVERED',
+
+        'status-cancelled':
+          order.status === 'CANCELLED'
+    }">
+        {{ getStatusLabel(order.status) }}
+    </div>
+
+    <!-- Payment Status -->
+    <!-- Payment Status -->
+<div class="payment-badge" [ngClass]="{
+    'payment-paid':
+      order.payment?.status === 'SUCCESS',
+
+    'payment-pending':
+      order.payment?.status === 'PENDING',
+
+    'payment-failed':
+      order.payment?.status === 'FAILED'
+}">
+
+    <span class="payment-badge-icon">
+        {{
+          order.payment?.status === 'SUCCESS'
+            ? '✓'
+            : order.payment?.status === 'FAILED'
+            ? '✕'
+            : '◷'
+        }}
+    </span>
+
+    {{
+      order.payment?.status === 'SUCCESS'
+        ? 'Paid'
+        : order.payment?.status === 'FAILED'
+        ? 'Payment Failed'
+        : 'Payment Pending'
+    }}
+
+</div>
+
+
+
+</div>
 
                 </div>
 
@@ -413,15 +453,42 @@
 
                     <div class="footer-total">
 
-                        <span>
-                            Total
-                        </span>
+    <span>
+        Total
+    </span>
 
-                        <strong>
-                            ₹{{ order.totalAmount }}
-                        </strong>
+    <ng-container
+        *ngIf="
+            order.payment?.status === 'PENDING' &&
+            order.status !== 'CANCELLED';
+            else showTotalAmount
+        "
+    >
 
-                    </div>
+        <button
+            type="button"
+            class="pay-now-button"
+            [disabled]="payingOrderId() === order.orderNumber"
+            (click)="payNow(order)"
+        >
+            {{
+                payingOrderId() === order.orderNumber
+                    ? 'Processing...'
+                    : 'Pay ₹' + order.totalAmount
+            }}
+        </button>
+
+    </ng-container>
+
+    <ng-template #showTotalAmount>
+
+        <strong>
+            ₹{{ order.totalAmount }}
+        </strong>
+
+    </ng-template>
+
+</div>
 
                 </div>
 

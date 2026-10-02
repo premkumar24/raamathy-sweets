@@ -444,6 +444,100 @@ const generateInvoiceBuffer = (order) => {
                 }
             );
 
+          // --------------------------------------------------
+// Payment Status Seal
+// --------------------------------------------------
+
+const paymentStatus =
+    order.payment?.status || "PENDING";
+
+let sealColor;
+let sealBackground;
+let sealText;
+
+if (paymentStatus === "SUCCESS") {
+
+    sealColor = "#198754";
+    sealBackground = "#E9F8EF";
+    sealText = "PAYMENT\nSUCCESSFUL";
+
+} else if (paymentStatus === "FAILED") {
+
+    sealColor = "#DC3545";
+    sealBackground = "#FDECEF";
+    sealText = "PAYMENT\nFAILED";
+
+} else {
+
+    sealColor = "#D97706";
+    sealBackground = "#FFF7E6";
+    sealText = "PAYMENT\nPENDING";
+
+}
+
+// Seal position
+
+const sealX = 90;
+const sealY = currentY - 15;
+const sealSize = 95;
+
+// Outer seal
+
+doc
+    .circle(
+        sealX + sealSize / 2,
+        sealY + sealSize / 2,
+        sealSize / 2
+    )
+    .fillColor(sealBackground)
+    .fill();
+
+doc
+    .circle(
+        sealX + sealSize / 2,
+        sealY + sealSize / 2,
+        sealSize / 2 - 3
+    )
+    .lineWidth(3)
+    .strokeColor(sealColor)
+    .stroke();
+
+// Inner dashed-style ring
+
+doc
+    .circle(
+        sealX + sealSize / 2,
+        sealY + sealSize / 2,
+        sealSize / 2 - 10
+    )
+    .lineWidth(1)
+    .dash(3, {
+        space: 3
+    })
+    .strokeColor(sealColor)
+    .stroke();
+
+// Reset dash
+
+doc.undash();
+
+// Seal text
+
+doc
+    .fontSize(9)
+    .font("Helvetica-Bold")
+    .fillColor(sealColor)
+    .text(
+        sealText,
+        sealX + 10,
+        sealY + 38,
+        {
+            width: sealSize - 20,
+            align: "center",
+            lineGap: 2
+        }
+    );  
+
         // --------------------------------------------------
         // Thank You Section
         // --------------------------------------------------

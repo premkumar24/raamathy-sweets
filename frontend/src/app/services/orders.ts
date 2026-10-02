@@ -11,6 +11,16 @@ export interface OrderItem {
   subtotal: number;
 }
 
+export interface OrderPayment {
+  method: 'online' | 'offline';
+  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  gateway?: string;
+  gatewayOrderId?: string;
+  transactionId?: string;
+  paidAt?: string | null;
+  paymentNotificationSent?: boolean;
+}
+
 export interface Order {
   _id: string;
   orderNumber: string;
@@ -23,6 +33,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   delivery?: Delivery;
+  payment?: OrderPayment;
 }
 
 export interface OrdersResponse {
